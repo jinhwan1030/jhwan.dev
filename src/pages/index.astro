@@ -1,49 +1,366 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+<html lang="ko">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+      :root {
+        --grad-start: #7c3aed;
+        --grad-mid: #2563eb;
+        --grad-end: #0891b2;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background: #ffffff;
+        color: #0f172a;
+        overflow-x: hidden;
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      /* ── HERO ── */
+      .hero {
+        min-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 6rem 0 4rem;
+      }
+
+      .hero-eyebrow {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeUp 0.6s ease forwards 0.1s;
+      }
+
+      .hero-name {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(3rem, 8vw, 6rem);
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--grad-start), var(--grad-mid), var(--grad-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeUp 0.6s ease forwards 0.2s;
+      }
+
+      .hero-title {
+        font-size: clamp(1rem, 2vw, 1.15rem);
+        font-weight: 300;
+        color: #64748b;
+        margin-bottom: 2.5rem;
+        line-height: 1.7;
+        opacity: 0;
+        animation: fadeUp 0.6s ease forwards 0.3s;
+      }
+
+      .hero-title span {
+        color: #334155;
+        font-weight: 500;
+      }
+
+      .hero-cta {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        opacity: 0;
+        animation: fadeUp 0.6s ease forwards 0.4s;
+      }
+
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+        color: white;
+        text-decoration: none;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+
+      .btn-primary:hover {
+        opacity: 0.85;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.5rem;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        text-decoration: none;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 400;
+        transition: border-color 0.2s, color 0.2s, transform 0.2s;
+      }
+
+      .btn-secondary:hover {
+        border-color: #cbd5e1;
+        color: #334155;
+        transform: translateY(-2px);
+      }
+
+      .divider {
+        height: 1px;
+        background: #f1f5f9;
+      }
+
+      /* ── SECTION ── */
+      .section {
+        padding: 4.5rem 0;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      .section.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        margin-bottom: 0.75rem;
+      }
+
+      .section-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.5rem, 3.5vw, 2rem);
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 2rem;
+        letter-spacing: -0.02em;
+      }
+
+      /* ── SKILLS ── */
+      .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .skill-group {
+        padding: 1.5rem;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .skill-group:hover {
+        border-color: #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      }
+
+      .skill-group-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--grad-start), var(--grad-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .skill-tag {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 9999px;
+        color: #64748b;
+        background: #f8fafc;
+        transition: border-color 0.2s, color 0.2s;
+      }
+
+      .skill-tag:hover {
+        border-color: #cbd5e1;
+        color: #334155;
+      }
+
+      .skill-tag.interest {
+        border-color: #ede9fe;
+        color: #7c3aed;
+        background: #faf5ff;
+        font-style: italic;
+      }
+
+      /* ── CONTACT ── */
+      .contact-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        text-decoration: none;
+        color: #64748b;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+      }
+
+      .contact-row:last-child { border-bottom: none; }
+
+      .contact-row:hover { color: #334155; }
+
+      .contact-label {
+        font-size: 0.7rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        width: 72px;
+        flex-shrink: 0;
+        font-weight: 500;
+      }
+
+      .contact-value { flex: 1; }
+
+      .contact-arrow {
+        opacity: 0;
+        transform: translateX(-4px);
+        transition: opacity 0.2s, transform 0.2s;
+        color: #94a3b8;
+      }
+
+      .contact-row:hover .contact-arrow {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @media (max-width: 640px) {
+        .skills-grid { grid-template-columns: 1fr; }
+        .hero { min-height: 70vh; }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+
+    <main>
+      <section class="hero">
+        <p class="hero-eyebrow">Portfolio & Blog</p>
+        <h1 class="hero-name">Jinhwan<br />Jeong</h1>
+        <p class="hero-title">
+          <span>기획 및 개발자</span> — 데이터와 코드로<br />
+          아이디어를 현실로 만듭니다.
+        </p>
+        <div class="hero-cta">
+          <a href="/blog" class="btn-primary">블로그 보기 →</a>
+          <a href="#contact" class="btn-secondary">연락하기</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section" id="skills">
+        <p class="section-label">Skills</p>
+        <h2 class="section-title">기술 스택</h2>
+        <div class="skills-grid">
+          <div class="skill-group">
+            <p class="skill-group-name">빅데이터 / ML</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">PyTorch</span>
+              <span class="skill-tag">Pandas</span>
+              <span class="skill-tag">NumPy</span>
+              <span class="skill-tag">Scikit-learn</span>
+            </div>
+          </div>
+          <div class="skill-group">
+            <p class="skill-group-name">인프라 / 백엔드</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">Linux</span>
+              <span class="skill-tag">Nginx</span>
+              <span class="skill-tag">FastAPI</span>
+            </div>
+          </div>
+          <div class="skill-group">
+            <p class="skill-group-name">프론트 / 모바일</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Astro</span>
+              <span class="skill-tag interest">Android ✦</span>
+              <span class="skill-tag interest">React ✦</span>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.72rem; color: #cbd5e1;">✦ 관심 분야</p>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="section" id="contact">
+        <p class="section-label">Contact</p>
+        <h2 class="section-title">연락하기</h2>
+        <div style="margin-top: 0.5rem;">
+          <a href="mailto:saewoo_@naver.com" class="contact-row">
+            <span class="contact-label">Email</span>
+            <span class="contact-value">saewoo_@naver.com</span>
+            <span class="contact-arrow">→</span>
+          </a>
+          <a href="#" class="contact-row">
+            <span class="contact-label">GitHub</span>
+            <span class="contact-value" style="color: #e2e8f0;">준비 중</span>
+            <span class="contact-arrow">→</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <Footer />
+
+    <script>
+      const sections = document.querySelectorAll('.section');
+      const observer = new IntersectionObserver(
+        (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+        { threshold: 0.1 }
+      );
+      sections.forEach(s => observer.observe(s));
+    </script>
+  </body>
 </html>
