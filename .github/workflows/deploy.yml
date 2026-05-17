@@ -34,6 +34,7 @@ jobs:
           host: ${{ secrets.PI_HOST }}
           username: ${{ secrets.PI_USER }}
           key: ${{ secrets.PI_SSH_KEY }}
+          port: 22
           script: |
             docker pull legyeseul/jhwan-portfolio:latest
             docker stop portfolio || true
