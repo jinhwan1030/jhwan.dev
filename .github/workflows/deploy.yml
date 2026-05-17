@@ -9,7 +9,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -27,16 +27,3 @@ jobs:
           context: .
           push: true
           tags: legyeseul/jhwan-portfolio:latest
-
-      - name: 라즈베리파이 배포
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.PI_HOST }}
-          username: ${{ secrets.PI_USER }}
-          key: ${{ secrets.PI_SSH_KEY }}
-          port: 22
-          script: |
-            docker pull legyeseul/jhwan-portfolio:latest
-            docker stop portfolio || true
-            docker rm portfolio || true
-            docker run -d --name portfolio -p 4321:80 --restart unless-stopped legyeseul/jhwan-portfolio:latest
