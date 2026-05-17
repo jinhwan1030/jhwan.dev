@@ -1,0 +1,38 @@
+name: Deploy to Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Hub 로그인
+        uses: docker/login-action@v3
+        with:
+          username: legyeseul
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 빌드 & Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: legyeseul/jhwan-portfolio:latest
+
+      - name: 라즈베리파이 배포
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          script: |
+            docker pull legyeseul/jhwan-portfolio:latest
+            docker stop portfolio || true
+            docker rm portfolio || true
+            docker run -d --name portfolio -p 4321:80 --restart unless-stopped legyeseul/jhwan-portfolio:latest
