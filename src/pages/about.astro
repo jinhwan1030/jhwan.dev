@@ -1,63 +1,275 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE } from '../consts';
 ---
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date('August 08 2021')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo
-		viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus
-		et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus
-		vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-	</p>
+<!doctype html>
+<html lang="ko">
+  <head>
+    <BaseHead title={`About | ${SITE_TITLE}`} description="Jinhwan Jung에 대하여" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-	<p>
-		Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non
-		tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna
-		porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-		massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis
-		bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra
-		massa massa ultricies mi.
-	</p>
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background: #ffffff;
+        color: #0f172a;
+      }
 
-	<p>
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl
-		suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet
-		nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae
-		turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-		dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat
-		semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus
-		vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-		facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam
-		vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla
-		urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
-	</p>
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 4rem 2rem 6rem;
+      }
 
-	<p>
-		Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc
-		scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur
-		gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-		pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim
-		blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id
-		cursus metus aliquam eleifend mi.
-	</p>
+      .page-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        margin-bottom: 0.75rem;
+      }
 
-	<p>
-		Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta
-		nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam
-		tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci
-		ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar
-		proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
-	</p>
-</Layout>
+      .page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #7c3aed, #2563eb, #0891b2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 3rem;
+        line-height: 1;
+      }
+
+      .section {
+        margin-bottom: 3.5rem;
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+
+      .section.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .section-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+      }
+
+      .prose {
+        font-size: 1rem;
+        line-height: 1.9;
+        color: #334155;
+        font-weight: 300;
+      }
+
+      .prose p {
+        margin-bottom: 1.25rem;
+      }
+
+      .prose p:last-child {
+        margin-bottom: 0;
+      }
+
+      .prose strong {
+        color: #0f172a;
+        font-weight: 500;
+      }
+
+      .divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 3.5rem 0;
+      }
+
+      /* 타임라인 */
+      .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+
+      .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 8px;
+        bottom: 8px;
+        width: 1px;
+        background: #f1f5f9;
+      }
+
+      .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+      }
+
+      .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.5rem;
+        top: 8px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #7c3aed, #2563eb);
+        transform: translateX(-3px);
+      }
+
+      .timeline-period {
+        font-size: 0.72rem;
+        color: #cbd5e1;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.25rem;
+      }
+
+      .timeline-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+      }
+
+      .timeline-desc {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.6;
+      }
+
+      /* 태그 */
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .tag {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.85rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 9999px;
+        color: #64748b;
+        background: #f8fafc;
+      }
+
+      .tag.highlight {
+        border-color: #ede9fe;
+        color: #7c3aed;
+        background: #faf5ff;
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <p class="page-label">About</p>
+      <h1 class="page-title">Jinhwan<br />Jung</h1>
+
+      <!-- 자기소개 -->
+      <section class="section">
+        <p class="section-label">Intro</p>
+        <div class="prose">
+          <p>
+            어릴 때부터 뭔가를 직접 만들고 고치는 걸 좋아했다. 남들이 사서 쓸 때 나는 뜯어보고 싶었고, 될 것 같으면 일단 해봤다.
+          </p>
+          <p>
+            <strong>헤킨토시</strong>를 올려보고, <strong>Xpenology</strong>로 NAS를 만들어보고, 라즈베리파이에 온갖 걸 올려보고, 잘 안 되면 더 찾아봤고, 되면 또 다른 걸 시도했다.
+          </p>
+          <p>
+            어느 순간 개발을 하고 있었고, 또 어느 순간 기획까지 하고 있었다. 빅데이터를 전공하면서 데이터를 다루는 법을 배웠고, 직접 서버를 올리면서 인프라를 익혔고, 서비스를 만들면서 사용자를 생각하게 됐다.
+          </p>
+          <p>
+            아직 제대로 된 기회는 없었지만, 기회를 기다리는 것보다 직접 만드는 게 낫다고 생각한다. 그래서 오늘도 뭔가를 만들고 있다.
+          </p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 경험 타임라인 -->
+      <section class="section">
+        <p class="section-label">Experience</p>
+        <div class="timeline">
+          <div class="timeline-item">
+            <p class="timeline-period">2026 ~</p>
+            <p class="timeline-title">jhwan.dev 운영</p>
+            <p class="timeline-desc">라즈베리파이 기반 홈서버로 직접 운영하는 포트폴리오 & 블로그. DDNS, Docker, GitHub Actions, SSL까지 직접 구축.</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-period">홈랩</p>
+            <p class="timeline-title">홈서버 구축</p>
+            <p class="timeline-desc">Xpenology NAS, Jellyfin, Proxmox, Nginx Proxy Manager, WireGuard VPN. 집에서 클라우드 없이 운영 중.</p>
+          </div>
+          <div class="timeline-item">
+            <p class="timeline-period">전공</p>
+            <p class="timeline-title">빅데이터 전공</p>
+            <p class="timeline-desc">Python, PyTorch, Pandas, NumPy, Scikit-learn. 데이터 분석부터 딥러닝까지.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 관심사 -->
+      <section class="section">
+        <p class="section-label">Interests</p>
+        <div class="prose">
+          <p>
+            홈랩 구축, 자작 프로젝트, 그리고 언젠가는 내 서비스 하나 제대로 만들어보는 것. Android와 React에 관심이 생겼고, 요즘은 프론트엔드도 공부 중이다.
+          </p>
+        </div>
+        <div class="tags">
+          <span class="tag highlight">홈랩</span>
+          <span class="tag highlight">ML/AI</span>
+          <span class="tag">Android</span>
+          <span class="tag">React</span>
+          <span class="tag">임베디드</span>
+          <span class="tag">자작 프로젝트</span>
+          <span class="tag">데스크테리어</span>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <!-- 기술 스택 -->
+      <section class="section">
+        <p class="section-label">Stack</p>
+        <div class="tags">
+          <span class="tag highlight">Python</span>
+          <span class="tag highlight">PyTorch</span>
+          <span class="tag highlight">Docker</span>
+          <span class="tag">Pandas</span>
+          <span class="tag">NumPy</span>
+          <span class="tag">Scikit-learn</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">Linux</span>
+          <span class="tag">Nginx</span>
+          <span class="tag">Astro</span>
+        </div>
+      </section>
+
+    </main>
+    <Footer />
+
+    <script>
+      const sections = document.querySelectorAll('.section');
+      const observer = new IntersectionObserver(
+        (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+        { threshold: 0.1 }
+      );
+      sections.forEach(s => observer.observe(s));
+    </script>
+  </body>
+</html>
