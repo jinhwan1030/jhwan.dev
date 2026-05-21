@@ -226,6 +226,55 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         font-style: italic;
       }
 
+      /* ── PROJECTS ── */
+      .project-card {
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        padding: 1.75rem;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      }
+
+      .project-card:hover {
+        border-color: #e2e8f0;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        transform: translateY(-3px);
+      }
+
+      .project-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .project-emoji {
+        font-size: 1.5rem;
+      }
+
+      .project-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+      }
+
+      .project-desc {
+        font-size: 0.875rem;
+        color: #64748b;
+        line-height: 1.7;
+        margin-bottom: 1.25rem;
+      }
+
+      .project-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
       /* ── CONTACT ── */
       .contact-row {
         display: flex;
@@ -333,6 +382,27 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       </section>
 
       <div class="divider"></div>
+
+      <section class="section" id="projects">
+        <p class="section-label">Projects</p>
+        <h2 class="section-title">프로젝트</h2>
+        <a href="/blog/homelab-setup" class="project-card">
+          <div class="project-header">
+            <span class="project-emoji">🖥️</span>
+            <span class="project-title">홈서버 구축 (jhwan.dev)</span>
+          </div>
+          <p class="project-desc">
+            라즈베리파이 4B 기반 홈서버. DDNS, Nginx Proxy Manager, Let's Encrypt SSL, Docker, GitHub Actions CI/CD까지 직접 구축해서 운영 중.
+          </p>
+          <div class="project-tags">
+            <span class="skill-tag">Raspberry Pi</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">Nginx</span>
+            <span class="skill-tag">GitHub Actions</span>
+            <span class="skill-tag">Cloudflare</span>
+          </div>
+        </a>
+      </section>
 
       <section class="section" id="contact">
         <p class="section-label">Contact</p>
