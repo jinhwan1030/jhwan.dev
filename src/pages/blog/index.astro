@@ -1,114 +1,161 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  '홈랩': '🖥️',
+  'ML/AI': '🤖',
+  'Android': '📱',
+  '개발': '💻',
+  '프로젝트': '🗂️',
+  '일상': '✍️',
+};
+
+const CATEGORY_COLOR: Record<string, string> = {
+  '홈랩': 'linear-gradient(135deg, #7c3aed, #2563eb)',
+  'ML/AI': 'linear-gradient(135deg, #2563eb, #0891b2)',
+  'Android': 'linear-gradient(135deg, #16a34a, #0891b2)',
+  '개발': 'linear-gradient(135deg, #0891b2, #7c3aed)',
+  '프로젝트': 'linear-gradient(135deg, #ea580c, #7c3aed)',
+  '일상': 'linear-gradient(135deg, #db2777, #ea580c)',
+};
+
 const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
+<html lang="ko">
+  <head>
+    <BaseHead title={`Blog | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+      body {
+        font-family: 'DM Sans', sans-serif;
+        background: #ffffff;
+        color: #0f172a;
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+      }
+
+      .page-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #cbd5e1;
+        margin-bottom: 0.75rem;
+      }
+
+      .page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 3rem;
+        letter-spacing: -0.02em;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        border: 1px solid #f1f5f9;
+        border-radius: 16px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+        display: block;
+      }
+
+      .card:hover {
+        border-color: #e2e8f0;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        transform: translateY(-3px);
+      }
+
+      .card-thumb {
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+      }
+
+      .card-body {
+        padding: 1.25rem;
+      }
+
+      .card-category {
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7c3aed;
+        margin-bottom: 0.5rem;
+      }
+
+      .card-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+      }
+
+      .card-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+      }
+
+      .card-date {
+        font-size: 0.72rem;
+        color: #cbd5e1;
+      }
+
+      @media (max-width: 640px) {
+        .cards { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <p class="page-label">Blog</p>
+      <h1 class="page-title">글 목록</h1>
+      <div class="cards">
+        {posts.map((post) => (
+          <a href={`/blog/${post.id}/`} class="card">
+            <div class="card-thumb" style={`background: ${CATEGORY_COLOR[post.data.category] || 'linear-gradient(135deg, #7c3aed, #2563eb)'}`}>
+              {CATEGORY_EMOJI[post.data.category] || '💻'}
+            </div>
+            <div class="card-body">
+              <p class="card-category">{post.data.category}</p>
+              <h2 class="card-title">{post.data.title}</h2>
+              <p class="card-desc">{post.data.description}</p>
+              <p class="card-date">{post.data.pubDate.toLocaleDateString('ko-KR')}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </main>
+    <Footer />
+  </body>
 </html>
