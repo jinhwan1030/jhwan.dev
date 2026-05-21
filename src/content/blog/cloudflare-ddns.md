@@ -101,6 +101,7 @@ Cloudflare API 공식 문서를 보면 엔드포인트가 이렇게 나온다: /
 Zone ID도 맞고, 토큰도 맞고, 권한도 맞는데 계속 에러가 났다. 원인은 황당하게도 **슬래시(/)가 아니라 언더스코어(_)** 였다.
 
 ❌ /zones/{zone_id}/dns/records
+
 ✅ /zones/{zone_id}/dns_records
 
 `dns/records`가 아니라 `dns_records`다. 이걸 찾는 데 한 시간이 걸렸다.
@@ -109,9 +110,11 @@ Zone ID도 맞고, 토큰도 맞고, 권한도 맞는데 계속 에러가 났다
 
 ```bash
 sudo crontab -e
+
+* * * * * /{절대경로}/cf-ddns.sh
 ```
 
-* * * * * /home/닉네임/cf-ddns.sh
+
 
 매분마다 실행해서 IP가 바뀌면 자동으로 업데이트된다. IP가 바뀌지 않으면 로그를 남기지 않아서 깔끔하다.
 
