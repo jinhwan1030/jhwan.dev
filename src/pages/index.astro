@@ -227,6 +227,12 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       /* ── PROJECTS ── */
+      .projects-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
       .project-card {
         border: 1px solid #f1f5f9;
         border-radius: 16px;
@@ -241,6 +247,16 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         border-color: #e2e8f0;
         box-shadow: 0 8px 30px rgba(0,0,0,0.06);
         transform: translateY(-3px);
+      }
+
+      .project-card.featured {
+        border-color: #ede9fe;
+        background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%);
+      }
+
+      .project-card.featured:hover {
+        border-color: #c4b5fd;
+        box-shadow: 0 8px 30px rgba(124,58,237,0.08);
       }
 
       .project-header {
@@ -273,6 +289,33 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         display: flex;
         flex-wrap: wrap;
         gap: 0.4rem;
+        margin-bottom: 1rem;
+      }
+
+      .project-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.75rem;
+      }
+
+      .project-link {
+        font-size: 0.8rem;
+        color: #7c3aed;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .project-badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.6rem;
+        background: #dcfce7;
+        color: #16a34a;
+        border-radius: 9999px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
       }
 
       /* ── CONTACT ── */
@@ -289,7 +332,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       .contact-row:last-child { border-bottom: none; }
-
       .contact-row:hover { color: #334155; }
 
       .contact-label {
@@ -386,22 +428,52 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       <section class="section" id="projects">
         <p class="section-label">Projects</p>
         <h2 class="section-title">프로젝트</h2>
-        <a href="/blog/homelab-setup" class="project-card">
-          <div class="project-header">
-            <span class="project-emoji">🖥️</span>
-            <span class="project-title">홈서버 구축 (jhwan.dev)</span>
-          </div>
-          <p class="project-desc">
-            라즈베리파이 4B 기반 홈서버. DDNS, Nginx Proxy Manager, Let's Encrypt SSL, Docker, GitHub Actions CI/CD까지 직접 구축해서 운영 중.
-          </p>
-          <div class="project-tags">
-            <span class="skill-tag">Raspberry Pi</span>
-            <span class="skill-tag">Docker</span>
-            <span class="skill-tag">Nginx</span>
-            <span class="skill-tag">GitHub Actions</span>
-            <span class="skill-tag">Cloudflare</span>
-          </div>
-        </a>
+        <div class="projects-grid">
+
+          <!-- babyweather -->
+          <a href="/blog/babyweather" class="project-card featured">
+            <div class="project-header">
+              <span class="project-emoji">☀️</span>
+              <span class="project-title">아이날씨 (BabyWeather)</span>
+            </div>
+            <p class="project-desc">
+              기상청·에어코리아·카카오 API를 조합해 아이와 외출하기 좋은 날씨인지 100점 만점으로 보여주는 웹앱.
+              FastAPI + Docker + 라즈베리파이로 직접 서비스 운영 중. PWA로 앱처럼 설치도 가능.
+            </p>
+            <div class="project-tags">
+              <span class="skill-tag">FastAPI</span>
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">Raspberry Pi</span>
+              <span class="skill-tag">기상청 API</span>
+              <span class="skill-tag">에어코리아 API</span>
+              <span class="skill-tag">PWA</span>
+            </div>
+            <div class="project-footer">
+              <span class="project-link">babyweather.jhwan.dev →</span>
+              <span class="project-badge">운영 중</span>
+            </div>
+          </a>
+
+          <!-- 홈서버 -->
+          <a href="/blog/homelab-setup" class="project-card">
+            <div class="project-header">
+              <span class="project-emoji">🖥️</span>
+              <span class="project-title">홈서버 구축 (jhwan.dev)</span>
+            </div>
+            <p class="project-desc">
+              라즈베리파이 4B 기반 홈서버. DDNS, Nginx Proxy Manager, Let's Encrypt SSL, Docker, GitHub Actions CI/CD까지 직접 구축해서 운영 중.
+            </p>
+            <div class="project-tags">
+              <span class="skill-tag">Raspberry Pi</span>
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">Nginx</span>
+              <span class="skill-tag">GitHub Actions</span>
+              <span class="skill-tag">Cloudflare</span>
+            </div>
+          </a>
+
+        </div>
       </section>
 
       <section class="section" id="contact">
