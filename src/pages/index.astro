@@ -33,7 +33,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         padding: 0 2rem;
       }
 
-      /* ── HERO ── */
       .hero {
         min-height: 80vh;
         display: flex;
@@ -78,10 +77,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         animation: fadeUp 0.6s ease forwards 0.3s;
       }
 
-      .hero-title span {
-        color: #334155;
-        font-weight: 500;
-      }
+      .hero-title span { color: #334155; font-weight: 500; }
 
       .hero-cta {
         display: flex;
@@ -105,10 +101,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transition: opacity 0.2s, transform 0.2s;
       }
 
-      .btn-primary:hover {
-        opacity: 0.85;
-        transform: translateY(-2px);
-      }
+      .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
 
       .btn-secondary {
         display: inline-flex;
@@ -124,18 +117,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transition: border-color 0.2s, color 0.2s, transform 0.2s;
       }
 
-      .btn-secondary:hover {
-        border-color: #cbd5e1;
-        color: #334155;
-        transform: translateY(-2px);
-      }
+      .btn-secondary:hover { border-color: #cbd5e1; color: #334155; transform: translateY(-2px); }
 
-      .divider {
-        height: 1px;
-        background: #f1f5f9;
-      }
+      .divider { height: 1px; background: #f1f5f9; }
 
-      /* ── SECTION ── */
       .section {
         padding: 4.5rem 0;
         opacity: 0;
@@ -143,10 +128,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transition: opacity 0.6s ease, transform 0.6s ease;
       }
 
-      .section.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      .section.visible { opacity: 1; transform: translateY(0); }
 
       .section-label {
         font-size: 0.7rem;
@@ -166,7 +148,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         letter-spacing: -0.02em;
       }
 
-      /* ── SKILLS ── */
       .skills-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -180,10 +161,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transition: border-color 0.2s, box-shadow 0.2s;
       }
 
-      .skill-group:hover {
-        border-color: #e2e8f0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-      }
+      .skill-group:hover { border-color: #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
 
       .skill-group-name {
         font-family: 'Syne', sans-serif;
@@ -198,11 +176,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         background-clip: text;
       }
 
-      .skill-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-      }
+      .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
       .skill-tag {
         font-size: 0.8rem;
@@ -214,10 +188,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transition: border-color 0.2s, color 0.2s;
       }
 
-      .skill-tag:hover {
-        border-color: #cbd5e1;
-        color: #334155;
-      }
+      .skill-tag:hover { border-color: #cbd5e1; color: #334155; }
 
       .skill-tag.interest {
         border-color: #ede9fe;
@@ -227,11 +198,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       /* ── PROJECTS ── */
-      .projects-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
+      .projects-grid { display: flex; flex-direction: column; gap: 1rem; }
 
       .project-card {
         border: 1px solid #f1f5f9;
@@ -249,15 +216,81 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transform: translateY(-3px);
       }
 
-      .project-card.featured {
-        border-color: #ede9fe;
+      /* 호버 오버레이 카드 */
+      .project-card-hover {
+        position: relative;
+        border: 1px solid #ede9fe;
+        border-radius: 16px;
         background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%);
+        overflow: hidden;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
       }
 
-      .project-card.featured:hover {
+      .project-card-hover:hover {
         border-color: #c4b5fd;
-        box-shadow: 0 8px 30px rgba(124,58,237,0.08);
+        box-shadow: 0 8px 30px rgba(124,58,237,0.1);
+        transform: translateY(-3px);
       }
+
+      .project-card-content {
+        padding: 1.75rem;
+        transition: filter 0.25s, opacity 0.25s;
+      }
+
+      .project-card-hover:hover .project-card-content {
+        filter: blur(1px);
+        opacity: 0.35;
+      }
+
+      /* 오버레이 */
+      .project-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        opacity: 0;
+        transition: opacity 0.25s;
+        padding: 1.75rem;
+      }
+
+      .project-card-hover:hover .project-overlay {
+        opacity: 1;
+      }
+
+      .overlay-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 1rem;
+        border-radius: 14px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: transform 0.15s, box-shadow 0.15s;
+        text-align: center;
+      }
+
+      .overlay-btn:hover { transform: scale(1.04); }
+
+      .overlay-btn.blog {
+        background: white;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      }
+
+      .overlay-btn.service {
+        background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
+        color: white;
+        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+      }
+
+      .overlay-btn-icon { font-size: 1.5rem; }
 
       .project-header {
         display: flex;
@@ -266,9 +299,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         margin-bottom: 0.75rem;
       }
 
-      .project-emoji {
-        font-size: 1.5rem;
-      }
+      .project-emoji { font-size: 1.5rem; }
 
       .project-title {
         font-family: 'Syne', sans-serif;
@@ -285,12 +316,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         margin-bottom: 1.25rem;
       }
 
-      .project-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-        margin-bottom: 1rem;
-      }
+      .project-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
 
       .project-footer {
         display: flex;
@@ -303,9 +329,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         font-size: 0.8rem;
         color: #7c3aed;
         font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
       }
 
       .project-badge {
@@ -353,10 +376,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         color: #94a3b8;
       }
 
-      .contact-row:hover .contact-arrow {
-        opacity: 1;
-        transform: translateX(0);
-      }
+      .contact-row:hover .contact-arrow { opacity: 1; transform: translateX(0); }
 
       @keyframes fadeUp {
         from { opacity: 0; transform: translateY(16px); }
@@ -366,6 +386,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       @media (max-width: 640px) {
         .skills-grid { grid-template-columns: 1fr; }
         .hero { min-height: 70vh; }
+        .overlay-btn { font-size: 0.75rem; padding: 0.75rem 0.5rem; }
       }
     </style>
   </head>
@@ -430,30 +451,43 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         <h2 class="section-title">프로젝트</h2>
         <div class="projects-grid">
 
-          <!-- babyweather -->
-          <a href="/blog/babyweather" class="project-card featured">
-            <div class="project-header">
-              <span class="project-emoji">☀️</span>
-              <span class="project-title">아이날씨 (BabyWeather)</span>
+          <!-- babyweather - 호버 오버레이 카드 -->
+          <div class="project-card-hover">
+            <div class="project-card-content">
+              <div class="project-header">
+                <span class="project-emoji">☀️</span>
+                <span class="project-title">아이날씨 (BabyWeather)</span>
+              </div>
+              <p class="project-desc">
+                기상청·에어코리아·카카오 API를 조합해 아이와 외출하기 좋은 날씨인지 100점 만점으로 보여주는 웹앱.
+                FastAPI + Docker + 라즈베리파이로 직접 서비스 운영 중. PWA로 앱처럼 설치도 가능.
+              </p>
+              <div class="project-tags">
+                <span class="skill-tag">FastAPI</span>
+                <span class="skill-tag">Docker</span>
+                <span class="skill-tag">Python</span>
+                <span class="skill-tag">Raspberry Pi</span>
+                <span class="skill-tag">기상청 API</span>
+                <span class="skill-tag">에어코리아 API</span>
+                <span class="skill-tag">PWA</span>
+              </div>
+              <div class="project-footer">
+                <span class="project-link">개발기 보기 →</span>
+                <span class="project-badge">운영 중</span>
+              </div>
             </div>
-            <p class="project-desc">
-              기상청·에어코리아·카카오 API를 조합해 아이와 외출하기 좋은 날씨인지 100점 만점으로 보여주는 웹앱.
-              FastAPI + Docker + 라즈베리파이로 직접 서비스 운영 중. PWA로 앱처럼 설치도 가능.
-            </p>
-            <div class="project-tags">
-              <span class="skill-tag">FastAPI</span>
-              <span class="skill-tag">Docker</span>
-              <span class="skill-tag">Python</span>
-              <span class="skill-tag">Raspberry Pi</span>
-              <span class="skill-tag">기상청 API</span>
-              <span class="skill-tag">에어코리아 API</span>
-              <span class="skill-tag">PWA</span>
+            <!-- 호버 오버레이 -->
+            <div class="project-overlay">
+              <a href="/blog/babyweather" class="overlay-btn blog">
+                <span class="overlay-btn-icon">📝</span>
+                블로그 글 보기
+              </a>
+              <a href="https://babyweather.jhwan.dev" target="_blank" class="overlay-btn service">
+                <span class="overlay-btn-icon">☀️</span>
+                서비스 가기
+              </a>
             </div>
-            <div class="project-footer">
-              <span class="project-link">babyweather.jhwan.dev →</span>
-              <span class="project-badge">운영 중</span>
-            </div>
-          </a>
+          </div>
 
           <!-- 홈서버 -->
           <a href="/blog/homelab-setup" class="project-card">
