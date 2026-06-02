@@ -1,63 +1,48 @@
-# Astro Starter Kit: Blog
+# jhwan.dev
 
-```sh
-npm create astro@latest -- --template blog
+> 개인 포트폴리오 & 블로그 — [jhwan.dev](https://jhwan.dev)
+
+Astro 기반 정적 사이트. 라즈베리파이 홈서버에서 Docker로 운영 중.
+
+## Stack
+
+- **Framework**: [Astro](https://astro.build)
+- **Deployment**: Docker + Raspberry Pi 4B
+- **CI/CD**: GitHub Actions → Docker Hub → cron pull
+- **Proxy**: Nginx Proxy Manager + Let's Encrypt SSL
+- **DNS**: Cloudflare (DDNS)
+
+## Project Structure
+
+```
+src/
+├── components/       # 공통 컴포넌트
+├── content/
+│   └── blog/         # 블로그 포스트 (.md)
+├── layouts/          # 페이지 레이아웃
+└── pages/
+    ├── index.astro   # 홈
+    ├── about.astro   # 소개
+    └── blog/         # 블로그
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Dev
 
-Features:
-
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```bash
+npm install
+npm run dev       # localhost:4321
+npm run build     # ./dist/ 빌드
+npm run preview   # 빌드 미리보기
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Deployment
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+`main` 브랜치에 push하면 GitHub Actions가 자동으로 Docker 이미지를 빌드해 Docker Hub에 올린다.
+라즈베리파이에서 1분마다 cron이 새 이미지를 감지하면 자동으로 업데이트한다.
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+```
+push to main
+  → GitHub Actions build (linux/amd64, linux/arm64)
+  → Docker Hub (legyeseul/jhwan-portfolio:latest)
+  → Raspberry Pi cron pull & restart
+```
