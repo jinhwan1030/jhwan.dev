@@ -36,7 +36,7 @@ src/
 
 ```bash
 npm install
-npm run dev       # localhost:4321
+npm run dev       
 npm run build     # ./dist/ 빌드
 npm run preview   # 빌드 미리보기
 ```
