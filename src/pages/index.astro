@@ -395,60 +395,23 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
     <main>
       <section class="hero">
-        <p class="hero-eyebrow">Portfolio & Blog</p>
+        <p class="hero-eyebrow">Developer Hub</p>
         <h1 class="hero-name">Jinhwan<br />Jung</h1>
         <p class="hero-title">
-          <span>기획 및 개발자</span> — 데이터와 코드로<br />
-          아이디어를 현실로 만듭니다.
+          <span>기획부터 배포, 운영 개선까지</span> 직접 해보는 개발자.<br />
+          BabyWeather를 만들고 운영하며 제품과 인프라를 함께 다듬고 있습니다.
         </p>
         <div class="hero-cta">
-          <a href="/blog" class="btn-primary">블로그 보기 →</a>
-          <a href="#contact" class="btn-secondary">연락하기</a>
+          <a href="/blog/babyweather" class="btn-primary">BabyWeather 사례 보기 →</a>
+          <a href="/blog" class="btn-secondary">글 목록 보기</a>
         </div>
-      </section>
-
-      <div class="divider"></div>
-
-      <section class="section" id="skills">
-        <p class="section-label">Skills</p>
-        <h2 class="section-title">기술 스택</h2>
-        <div class="skills-grid">
-          <div class="skill-group">
-            <p class="skill-group-name">빅데이터 / ML</p>
-            <div class="skill-tags">
-              <span class="skill-tag">Python</span>
-              <span class="skill-tag">PyTorch</span>
-              <span class="skill-tag">Pandas</span>
-              <span class="skill-tag">NumPy</span>
-              <span class="skill-tag">Scikit-learn</span>
-            </div>
-          </div>
-          <div class="skill-group">
-            <p class="skill-group-name">인프라 / 백엔드</p>
-            <div class="skill-tags">
-              <span class="skill-tag">Docker</span>
-              <span class="skill-tag">Linux</span>
-              <span class="skill-tag">Nginx</span>
-              <span class="skill-tag">FastAPI</span>
-            </div>
-          </div>
-          <div class="skill-group">
-            <p class="skill-group-name">프론트 / 모바일</p>
-            <div class="skill-tags">
-              <span class="skill-tag">Astro</span>
-              <span class="skill-tag interest">Android ✦</span>
-              <span class="skill-tag interest">React ✦</span>
-            </div>
-          </div>
-        </div>
-        <p style="margin-top: 1rem; font-size: 0.72rem; color: #cbd5e1;">✦ 관심 분야</p>
       </section>
 
       <div class="divider"></div>
 
       <section class="section" id="projects">
-        <p class="section-label">Projects</p>
-        <h2 class="section-title">프로젝트</h2>
+        <p class="section-label">Operating Products</p>
+        <h2 class="section-title">운영 중인 제품과 실험</h2>
         <div class="projects-grid">
 
           <!-- babyweather - 호버 오버레이 카드 -->
@@ -459,8 +422,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
                 <span class="project-title">아이날씨 (BabyWeather)</span>
               </div>
               <p class="project-desc">
-                기상청·에어코리아·카카오 API를 조합해 아이와 외출하기 좋은지 100점 만점으로 보여주는 모바일 웹앱.
-                FastAPI + Docker + 라즈베리파이에서 직접 운영하며, 데이터 신뢰성과 배포 자동화를 계속 개선 중.
+                아이와 외출하기 좋은 시간을 빠르게 판단할 수 있도록 날씨·자외선·대기질을 하나의 점수로 묶은 모바일 웹앱.
+                FastAPI, Docker, 라즈베리파이 환경에서 직접 운영하며 데이터 신뢰성, 캐시, 배포 자동화를 계속 개선 중.
               </p>
               <div class="project-tags">
                 <span class="skill-tag">FastAPI</span>
@@ -509,6 +472,45 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
         </div>
       </section>
+
+      <div class="divider"></div>
+
+      <section class="section" id="skills">
+        <p class="section-label">Skills</p>
+        <h2 class="section-title">기술 스택</h2>
+        <div class="skills-grid">
+          <div class="skill-group">
+            <p class="skill-group-name">빅데이터 / ML</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">PyTorch</span>
+              <span class="skill-tag">Pandas</span>
+              <span class="skill-tag">NumPy</span>
+              <span class="skill-tag">Scikit-learn</span>
+            </div>
+          </div>
+          <div class="skill-group">
+            <p class="skill-group-name">인프라 / 백엔드</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">Linux</span>
+              <span class="skill-tag">Nginx</span>
+              <span class="skill-tag">FastAPI</span>
+            </div>
+          </div>
+          <div class="skill-group">
+            <p class="skill-group-name">프론트 / 모바일</p>
+            <div class="skill-tags">
+              <span class="skill-tag">Astro</span>
+              <span class="skill-tag interest">Android ✦</span>
+              <span class="skill-tag interest">React ✦</span>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.72rem; color: #cbd5e1;">✦ 관심 분야</p>
+      </section>
+
+      <div class="divider"></div>
 
       <section class="section" id="contact">
         <p class="section-label">Contact</p>

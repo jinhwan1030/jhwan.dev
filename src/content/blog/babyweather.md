@@ -127,9 +127,11 @@ GitHub Actions에서 API 이미지와 Web 이미지를 각각 빌드하고 Docke
 - FastAPI와 Web 이미지를 분리
 - GitHub Actions로 멀티 아키텍처 이미지 빌드
 - Docker Compose로 서비스 갱신
-- Notion에는 개발 로그와 이슈 기록 자동화
+- GitHub Repository Docs로 릴리즈, 운영 결정, 장애 대응 기록 관리
 
-Notion은 내부 운영 기록을 남기는 용도로 두고, 실제 사용자에게 필요한 내용은 서비스의 업데이트 내역과 피드백 페이지에만 짧게 노출했다. 포트폴리오에는 이 글처럼 공개 가능한 운영 경험만 정리한다.
+운영 기록의 원장은 저장소 안에 두기로 했다. `README`, `CHANGELOG`, `ROADMAP`, `docs/decisions`, `docs/operations`, `docs/incidents`를 나눠서 릴리즈와 운영 결정을 코드와 함께 버전 관리한다.
+
+실제 사용자에게 필요한 내용은 서비스의 업데이트 내역과 피드백 페이지에 짧게 노출하고, 기술적으로 공개 가능한 운영 경험은 이 글처럼 `jhwan.dev`의 케이스 스터디로 정리한다.
 
 ## 결과
 
