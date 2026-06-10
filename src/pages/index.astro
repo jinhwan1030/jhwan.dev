@@ -87,6 +87,18 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         animation: fadeUp 0.6s ease forwards 0.4s;
       }
 
+      .hero-text-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        color: var(--color-muted);
+        font-size: 0.875rem;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      .hero-text-link:hover { color: var(--color-ink-soft); }
+
       .btn-primary {
         display: inline-flex;
         align-items: center;
@@ -343,43 +355,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         letter-spacing: 0.05em;
       }
 
-      /* ── CONTACT ── */
-      .contact-row {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.1rem 0;
-        border-bottom: 1px solid #f1f5f9;
-        text-decoration: none;
-        color: #64748b;
-        font-size: 0.9rem;
-        transition: color 0.2s;
-      }
-
-      .contact-row:last-child { border-bottom: none; }
-      .contact-row:hover { color: #334155; }
-
-      .contact-label {
-        font-size: 0.7rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: #cbd5e1;
-        width: 72px;
-        flex-shrink: 0;
-        font-weight: 500;
-      }
-
-      .contact-value { flex: 1; }
-
-      .contact-arrow {
-        opacity: 0;
-        transform: translateX(-4px);
-        transition: opacity 0.2s, transform 0.2s;
-        color: #94a3b8;
-      }
-
-      .contact-row:hover .contact-arrow { opacity: 1; transform: translateX(0); }
-
       @keyframes fadeUp {
         from { opacity: 0; transform: translateY(16px); }
         to { opacity: 1; transform: translateY(0); }
@@ -408,12 +383,18 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         .hero-cta {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 0.6rem;
+          gap: 0.35rem;
         }
         .btn-primary,
         .btn-secondary {
           justify-content: center;
           width: 100%;
+        }
+        .hero-text-link {
+          justify-content: center;
+          width: 100%;
+          min-height: 36px;
+          font-size: 0.8rem;
         }
         .section {
           padding: 2.45rem 0;
@@ -468,8 +449,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           BabyWeather와 홈랩 인프라를 통해 작은 서비스를 오래 굴리는 방법을 실험하고 있습니다.
         </p>
         <div class="hero-cta">
-          <a href="/blog/babyweather" class="btn-primary">BabyWeather 사례 보기 →</a>
-          <a href="/blog" class="btn-secondary">글 목록 보기</a>
+          <a href="/blog/babyweather" class="btn-primary">BabyWeather 기록 보기 →</a>
+          <a href="/blog" class="hero-text-link">전체 글 보기</a>
         </div>
       </section>
 
@@ -477,7 +458,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
       <section class="section" id="projects">
         <p class="section-label">Operating Products</p>
-        <h2 class="section-title">운영 중인 제품과 실험</h2>
+        <h2 class="section-title">직접 만든 서비스</h2>
         <div class="projects-grid">
 
           <!-- babyweather - 호버 오버레이 카드 -->
@@ -501,7 +482,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
                 <span class="skill-tag">PWA</span>
               </div>
               <div class="project-footer">
-                <span class="project-link">운영 케이스 스터디 보기 →</span>
+                <span class="project-link">BabyWeather 기록 보기 →</span>
                 <span class="project-badge">운영 중</span>
               </div>
             </div>
@@ -509,7 +490,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <div class="project-overlay">
               <a href="/blog/babyweather" class="overlay-btn blog">
                 <span class="overlay-btn-icon">📝</span>
-                케이스 스터디 보기
+                기록 보기
               </a>
               <a href="https://babyweather.jhwan.dev" target="_blank" class="overlay-btn service">
                 <span class="overlay-btn-icon">☀️</span>
@@ -568,32 +549,13 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
             <p class="skill-group-name">프론트 / 모바일</p>
             <div class="skill-tags">
               <span class="skill-tag">Astro</span>
-              <span class="skill-tag interest">Android ✦</span>
-              <span class="skill-tag interest">React ✦</span>
+              <span class="skill-tag">Android</span>
+              <span class="skill-tag">React</span>
             </div>
           </div>
         </div>
-        <p style="margin-top: 1rem; font-size: 0.72rem; color: #cbd5e1;">✦ 관심 분야</p>
       </section>
 
-      <div class="divider"></div>
-
-      <section class="section" id="contact">
-        <p class="section-label">Contact</p>
-        <h2 class="section-title">연락하기</h2>
-        <div style="margin-top: 0.5rem;">
-          <a href="mailto:saewoo_@naver.com" class="contact-row">
-            <span class="contact-label">Email</span>
-            <span class="contact-value">saewoo_@naver.com</span>
-            <span class="contact-arrow">→</span>
-          </a>
-          <a href="#" class="contact-row">
-            <span class="contact-label">GitHub</span>
-            <span class="contact-value" style="color: #e2e8f0;">github.com/jinhwan1030</span>
-            <span class="contact-arrow">→</span>
-          </a>
-        </div>
-      </section>
     </main>
 
     <Footer />
