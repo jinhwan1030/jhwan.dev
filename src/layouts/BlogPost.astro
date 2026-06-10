@@ -94,26 +94,36 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			}
 			@media (max-width: 640px) {
 				.hero-image {
-					padding: 1rem 0.75rem 0;
+					padding: 0.75rem 0.65rem 0;
 				}
 				.hero-image img {
 					border-radius: var(--radius-md);
 				}
 				.prose {
-					width: min(100% - 1.25rem, var(--article-max));
-					padding: 1.75rem 0 4rem;
-					font-size: 1rem;
-					line-height: 1.75;
+					width: min(100% - 1.5rem, var(--article-max));
+					padding: 1.35rem 0 3.5rem;
+					font-size: 0.95rem;
+					line-height: 1.72;
 				}
 				.title {
-					margin-bottom: 1.5rem;
-					padding-bottom: 1rem;
+					margin-bottom: 1.15rem;
+					padding-bottom: 0.75rem;
 				}
 				.title h1 {
-					font-size: clamp(1.85rem, 9vw, 2.6rem);
+					font-size: clamp(1.48rem, 7.2vw, 2.05rem);
+					line-height: 1.18;
 				}
 				.date {
-					font-size: 0.8rem;
+					margin-bottom: 0.55rem;
+					font-size: 0.72rem;
+				}
+				.prose :global(h2) {
+					margin-top: 2rem;
+					font-size: 1.28rem;
+				}
+				.prose :global(h3) {
+					margin-top: 1.5rem;
+					font-size: 1.05rem;
 				}
 			}
 		</style>

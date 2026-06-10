@@ -131,18 +131,54 @@ const posts = (await getCollection('blog')).sort(
 
       @media (max-width: 640px) {
         main {
-          padding: 3rem 1rem;
+          padding: 2.6rem 0.875rem;
+        }
+        .page-label {
+          font-size: 0.66rem;
         }
         .page-title {
-          margin-bottom: 1.75rem;
+          font-size: 1.75rem;
+          margin-bottom: 1.25rem;
         }
-        .cards { grid-template-columns: 1fr; }
+        .cards {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+        .card {
+          display: grid;
+          grid-template-columns: 72px 1fr;
+          min-height: 108px;
+          border-radius: var(--radius-md);
+        }
         .card-thumb {
-          height: 112px;
-          font-size: 2.5rem;
+          height: 100%;
+          min-height: 108px;
+          font-size: 1.8rem;
         }
         .card-body {
-          padding: 1.1rem;
+          padding: 0.75rem 0.85rem;
+          min-width: 0;
+        }
+        .card-category {
+          margin-bottom: 0.28rem;
+          font-size: 0.64rem;
+        }
+        .card-title {
+          margin-bottom: 0.28rem;
+          font-size: 0.9rem;
+          line-height: 1.36;
+        }
+        .card-desc {
+          display: -webkit-box;
+          margin-bottom: 0.45rem;
+          overflow: hidden;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-size: 0.76rem;
+          line-height: 1.45;
+        }
+        .card-date {
+          font-size: 0.66rem;
         }
       }
     </style>
