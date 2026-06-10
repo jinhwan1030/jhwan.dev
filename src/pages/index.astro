@@ -10,78 +10,78 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-
       :root {
-        --grad-start: #7c3aed;
-        --grad-mid: #2563eb;
-        --grad-end: #0891b2;
+        --grad-start: #2563eb;
+        --grad-mid: #4f46e5;
+        --grad-end: #0f766e;
       }
 
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
-        font-family: 'DM Sans', sans-serif;
+        font-family: var(--font-sans);
         background: #ffffff;
-        color: #0f172a;
+        color: var(--color-ink);
         overflow-x: hidden;
       }
 
       main {
-        max-width: 860px;
+        max-width: var(--page-max);
         margin: 0 auto;
-        padding: 0 2rem;
+        padding: 0 1.5rem;
       }
 
       .hero {
-        min-height: 80vh;
+        min-height: min(720px, calc(100svh - 64px));
         display: flex;
         flex-direction: column;
         justify-content: center;
-        padding: 6rem 0 4rem;
+        padding: 5rem 0 4rem;
       }
 
       .hero-eyebrow {
-        font-size: 0.75rem;
-        font-weight: 500;
-        letter-spacing: 0.2em;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #94a3b8;
-        margin-bottom: 1.5rem;
+        color: var(--color-faint);
+        margin-bottom: 1.1rem;
         opacity: 0;
         animation: fadeUp 0.6s ease forwards 0.1s;
       }
 
       .hero-name {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(3rem, 8vw, 6rem);
-        font-weight: 800;
-        line-height: 0.95;
-        letter-spacing: -0.03em;
+        max-width: 780px;
+        font-family: var(--font-display);
+        font-size: clamp(2.8rem, 9vw, 6.2rem);
+        font-weight: 850;
+        line-height: 0.98;
+        letter-spacing: 0;
         background: linear-gradient(135deg, var(--grad-start), var(--grad-mid), var(--grad-end));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
         opacity: 0;
         animation: fadeUp 0.6s ease forwards 0.2s;
       }
 
       .hero-title {
-        font-size: clamp(1rem, 2vw, 1.15rem);
-        font-weight: 300;
-        color: #64748b;
-        margin-bottom: 2.5rem;
-        line-height: 1.7;
+        max-width: 680px;
+        font-size: clamp(1.02rem, 2.2vw, 1.22rem);
+        font-weight: 450;
+        color: var(--color-muted);
+        margin-bottom: 2rem;
+        line-height: 1.75;
         opacity: 0;
         animation: fadeUp 0.6s ease forwards 0.3s;
       }
 
-      .hero-title span { color: #334155; font-weight: 500; }
+      .hero-title span { color: var(--color-ink); font-weight: 750; }
 
       .hero-cta {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         flex-wrap: wrap;
         opacity: 0;
         animation: fadeUp 0.6s ease forwards 0.4s;
@@ -91,13 +91,14 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.7rem 1.5rem;
+        min-height: 44px;
+        padding: 0 1.25rem;
         background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
         color: white;
         text-decoration: none;
         border-radius: 9999px;
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 750;
         transition: opacity 0.2s, transform 0.2s;
       }
 
@@ -107,19 +108,20 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.7rem 1.5rem;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
+        min-height: 44px;
+        padding: 0 1.25rem;
+        border: 1px solid var(--color-line);
+        color: var(--color-muted);
         text-decoration: none;
         border-radius: 9999px;
         font-size: 0.875rem;
-        font-weight: 400;
+        font-weight: 650;
         transition: border-color 0.2s, color 0.2s, transform 0.2s;
       }
 
-      .btn-secondary:hover { border-color: #cbd5e1; color: #334155; transform: translateY(-2px); }
+      .btn-secondary:hover { border-color: #cbd5e1; color: var(--color-ink-soft); transform: translateY(-2px); }
 
-      .divider { height: 1px; background: #f1f5f9; }
+      .divider { height: 1px; background: var(--color-line-soft); }
 
       .section {
         padding: 4.5rem 0;
@@ -131,21 +133,21 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       .section.visible { opacity: 1; transform: translateY(0); }
 
       .section-label {
-        font-size: 0.7rem;
-        font-weight: 500;
-        letter-spacing: 0.2em;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #cbd5e1;
+        color: var(--color-faint);
         margin-bottom: 0.75rem;
       }
 
       .section-title {
-        font-family: 'Syne', sans-serif;
+        font-family: var(--font-display);
         font-size: clamp(1.5rem, 3.5vw, 2rem);
-        font-weight: 700;
-        color: #0f172a;
+        font-weight: 800;
+        color: var(--color-ink);
         margin-bottom: 2rem;
-        letter-spacing: -0.02em;
+        letter-spacing: 0;
       }
 
       .skills-grid {
@@ -164,9 +166,9 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       .skill-group:hover { border-color: #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
 
       .skill-group-name {
-        font-family: 'Syne', sans-serif;
+        font-family: var(--font-display);
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 750;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         margin-bottom: 1rem;
@@ -302,11 +304,11 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       .project-emoji { font-size: 1.5rem; }
 
       .project-title {
-        font-family: 'Syne', sans-serif;
+        font-family: var(--font-display);
         font-size: 1.1rem;
-        font-weight: 700;
-        color: #0f172a;
-        letter-spacing: -0.01em;
+        font-weight: 800;
+        color: var(--color-ink);
+        letter-spacing: 0;
       }
 
       .project-desc {
@@ -384,8 +386,51 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       }
 
       @media (max-width: 640px) {
+        main { padding: 0 1rem; }
+        .hero {
+          min-height: auto;
+          padding: 4rem 0 3rem;
+        }
+        .hero-eyebrow {
+          margin-bottom: 0.9rem;
+          font-size: 0.7rem;
+        }
+        .hero-name {
+          font-size: clamp(2.55rem, 15vw, 4.6rem);
+          margin-bottom: 1rem;
+        }
+        .hero-title {
+          margin-bottom: 1.4rem;
+          font-size: 1rem;
+          line-height: 1.68;
+        }
+        .hero-cta {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.6rem;
+        }
+        .btn-primary,
+        .btn-secondary {
+          justify-content: center;
+          width: 100%;
+        }
+        .section {
+          padding: 3.25rem 0;
+        }
         .skills-grid { grid-template-columns: 1fr; }
-        .hero { min-height: 70vh; }
+        .project-card-content {
+          padding: 1.25rem;
+        }
+        .project-overlay {
+          position: static;
+          opacity: 1;
+          padding: 0 1.25rem 1.25rem;
+          gap: 0.6rem;
+        }
+        .project-card-hover:hover .project-card-content {
+          filter: none;
+          opacity: 1;
+        }
         .overlay-btn { font-size: 0.75rem; padding: 0.75rem 0.5rem; }
       }
     </style>
@@ -396,10 +441,10 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
     <main>
       <section class="hero">
         <p class="hero-eyebrow">Developer Hub</p>
-        <h1 class="hero-name">Jinhwan<br />Jung</h1>
+        <h1 class="hero-name">Build.<br />Operate.<br />Improve.</h1>
         <p class="hero-title">
-          <span>기획부터 배포, 운영 개선까지</span> 직접 해보는 개발자.<br />
-          BabyWeather를 만들고 운영하며 제품과 인프라를 함께 다듬고 있습니다.
+          <span>제품을 만들고, 직접 배포하고, 운영 중에 배운 것을 기록합니다.</span><br />
+          BabyWeather와 홈랩 인프라를 통해 작은 서비스를 오래 굴리는 방법을 실험하고 있습니다.
         </p>
         <div class="hero-cta">
           <a href="/blog/babyweather" class="btn-primary">BabyWeather 사례 보기 →</a>

@@ -11,46 +11,110 @@ type Props = CollectionEntry<'blog'>['data'];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={title} description={description} />
 		<style>
 			main {
-				width: calc(100% - 2em);
+				width: 100%;
 				max-width: 100%;
 				margin: 0;
+				padding: 0;
 			}
 			.hero-image {
 				width: 100%;
+				padding: 2rem 1rem 0;
 			}
 			.hero-image img {
 				display: block;
 				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
+				width: min(100%, 1020px);
+				border-radius: var(--radius-lg);
+				box-shadow: var(--shadow-soft);
 			}
 			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
+				width: min(var(--article-max), calc(100% - 2rem));
 				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
+				padding: 2.5rem 0 5rem;
+				color: var(--color-ink-soft);
+				font-size: 1.02rem;
+				line-height: 1.82;
 			}
 			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+				margin-bottom: 2rem;
+				padding: 0 0 1.5rem;
+				text-align: left;
+				line-height: 1.15;
 			}
 			.title h1 {
-				margin: 0 0 0.5em 0;
+				margin: 0 0 1rem;
+				font-size: clamp(2rem, 6vw, 3.4rem);
+				line-height: 1.12;
 			}
 			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				margin-bottom: 0.8rem;
+				color: var(--color-faint);
+				font-size: 0.86rem;
+				font-weight: 650;
 			}
 			.last-updated-on {
-				font-style: italic;
+				margin-top: 0.25rem;
+				color: var(--color-muted);
+				font-style: normal;
+				font-weight: 500;
+			}
+			.prose :global(h2) {
+				margin-top: 2.75rem;
+				margin-bottom: 1rem;
+				font-size: clamp(1.45rem, 4vw, 2rem);
+			}
+			.prose :global(h3) {
+				margin-top: 2rem;
+				margin-bottom: 0.85rem;
+			}
+			.prose :global(p) {
+				margin-bottom: 1.25rem;
+			}
+			.prose :global(table) {
+				display: block;
+				overflow-x: auto;
+				border: 1px solid var(--color-line-soft);
+				border-radius: var(--radius-md);
+			}
+			.prose :global(th),
+			.prose :global(td) {
+				padding: 0.7rem 0.85rem;
+				border-bottom: 1px solid var(--color-line-soft);
+				white-space: nowrap;
+			}
+			.prose :global(th) {
+				color: var(--color-ink);
+				background: var(--color-surface-soft);
+				font-weight: 750;
+			}
+			@media (max-width: 640px) {
+				.hero-image {
+					padding: 1rem 0.75rem 0;
+				}
+				.hero-image img {
+					border-radius: var(--radius-md);
+				}
+				.prose {
+					width: min(100% - 1.25rem, var(--article-max));
+					padding: 1.75rem 0 4rem;
+					font-size: 1rem;
+					line-height: 1.75;
+				}
+				.title {
+					margin-bottom: 1.5rem;
+					padding-bottom: 1rem;
+				}
+				.title h1 {
+					font-size: clamp(1.85rem, 9vw, 2.6rem);
+				}
+				.date {
+					font-size: 0.8rem;
+				}
 			}
 		</style>
 	</head>

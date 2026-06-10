@@ -33,36 +33,34 @@ const posts = (await getCollection('blog')).sort(
   <head>
     <BaseHead title={`Blog | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-
       body {
-        font-family: 'DM Sans', sans-serif;
+        font-family: var(--font-sans);
         background: #ffffff;
-        color: #0f172a;
+        color: var(--color-ink);
       }
 
       main {
-        max-width: 860px;
+        max-width: var(--page-max);
         margin: 0 auto;
-        padding: 4rem 2rem;
+        padding: 4rem 1.5rem;
       }
 
       .page-label {
-        font-size: 0.7rem;
-        font-weight: 500;
-        letter-spacing: 0.2em;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #cbd5e1;
+        color: var(--color-faint);
         margin-bottom: 0.75rem;
       }
 
       .page-title {
-        font-family: 'Syne', sans-serif;
-        font-size: clamp(1.75rem, 4vw, 2.5rem);
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 3rem;
-        letter-spacing: -0.02em;
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 850;
+        color: var(--color-ink);
+        margin-bottom: 2.5rem;
+        letter-spacing: 0;
       }
 
       .cards {
@@ -72,8 +70,8 @@ const posts = (await getCollection('blog')).sort(
       }
 
       .card {
-        border: 1px solid #f1f5f9;
-        border-radius: 16px;
+        border: 1px solid var(--color-line-soft);
+        border-radius: var(--radius-lg);
         overflow: hidden;
         text-decoration: none;
         color: inherit;
@@ -82,8 +80,8 @@ const posts = (await getCollection('blog')).sort(
       }
 
       .card:hover {
-        border-color: #e2e8f0;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        border-color: var(--color-line);
+        box-shadow: var(--shadow-soft);
         transform: translateY(-3px);
       }
 
@@ -96,42 +94,56 @@ const posts = (await getCollection('blog')).sort(
       }
 
       .card-body {
-        padding: 1.25rem;
+        padding: 1.3rem;
       }
 
       .card-category {
         font-size: 0.72rem;
-        font-weight: 500;
+        font-weight: 750;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #7c3aed;
+        color: var(--color-accent);
         margin-bottom: 0.5rem;
       }
 
       .card-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #0f172a;
-        margin-bottom: 0.5rem;
-        line-height: 1.4;
-        letter-spacing: -0.01em;
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-ink);
+        margin-bottom: 0.55rem;
+        line-height: 1.42;
+        letter-spacing: 0;
       }
 
       .card-desc {
-        font-size: 0.82rem;
-        color: #64748b;
-        line-height: 1.6;
+        font-size: 0.9rem;
+        color: var(--color-muted);
+        line-height: 1.65;
         margin-bottom: 1rem;
       }
 
       .card-date {
         font-size: 0.72rem;
-        color: #cbd5e1;
+        color: var(--color-faint);
+        font-weight: 650;
       }
 
       @media (max-width: 640px) {
+        main {
+          padding: 3rem 1rem;
+        }
+        .page-title {
+          margin-bottom: 1.75rem;
+        }
         .cards { grid-template-columns: 1fr; }
+        .card-thumb {
+          height: 112px;
+          font-size: 2.5rem;
+        }
+        .card-body {
+          padding: 1.1rem;
+        }
       }
     </style>
   </head>
