@@ -1,5 +1,5 @@
 ---
-title: '아이날씨 (BabyWeather) — 운영 중인 육아 외출 지수 웹앱 케이스 스터디'
+title: '아이날씨 (BabyWeather) — 직접 만들고 운영 중인 육아 외출 지수 웹앱'
 description: "기상청, 에어코리아, 카카오 API를 조합해 아이와 외출하기 좋은 날씨인지 점수로 알려주는 웹앱. FastAPI, Docker, GitHub Actions, 라즈베리파이로 직접 운영하며 개선 중인 서비스."
 pubDate: '2026-05-29'
 updatedDate: '2026-06-09'
@@ -131,7 +131,7 @@ GitHub Actions에서 API 이미지와 Web 이미지를 각각 빌드하고 Docke
 
 운영 기록의 원장은 저장소 안에 두기로 했다. `README`, `CHANGELOG`, `ROADMAP`, `docs/decisions`, `docs/operations`, `docs/incidents`를 나눠서 릴리즈와 운영 결정을 코드와 함께 버전 관리한다.
 
-실제 사용자에게 필요한 내용은 서비스의 업데이트 내역과 피드백 페이지에 짧게 노출하고, 기술적으로 공개 가능한 운영 경험은 이 글처럼 `jhwan.dev`의 케이스 스터디로 정리한다.
+실제 사용자에게 필요한 내용은 서비스의 업데이트 내역과 피드백 페이지에 짧게 노출하고, 기술적으로 공개 가능한 운영 경험은 이 글처럼 `jhwan.dev`의 운영 기록으로 정리한다.
 
 ## 결과
 
