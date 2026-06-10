@@ -204,13 +204,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
       .skill-tag:hover { border-color: #cbd5e1; color: #334155; }
 
-      .skill-tag.interest {
-        border-color: #ede9fe;
-        color: #7c3aed;
-        background: #faf5ff;
-        font-style: italic;
-      }
-
       /* ── PROJECTS ── */
       .projects-grid { display: flex; flex-direction: column; gap: 1rem; }
 
@@ -233,16 +226,16 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       /* 호버 오버레이 카드 */
       .project-card-hover {
         position: relative;
-        border: 1px solid #ede9fe;
+        border: 1px solid #dbeafe;
         border-radius: 16px;
-        background: linear-gradient(135deg, #faf5ff 0%, #f0f9ff 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
         overflow: hidden;
         transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
       }
 
       .project-card-hover:hover {
-        border-color: #c4b5fd;
-        box-shadow: 0 8px 30px rgba(124,58,237,0.1);
+        border-color: #93c5fd;
+        box-shadow: 0 8px 30px rgba(37,99,235,0.09);
         transform: translateY(-3px);
       }
 
@@ -301,7 +294,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       .overlay-btn.service {
         background: linear-gradient(135deg, var(--grad-start), var(--grad-mid));
         color: white;
-        box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+        box-shadow: 0 4px 16px rgba(37,99,235,0.24);
       }
 
       .overlay-btn-icon { font-size: 1.5rem; }
@@ -341,7 +334,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
       .project-link {
         font-size: 0.8rem;
-        color: #7c3aed;
+        color: #2563eb;
         font-weight: 600;
       }
 
@@ -442,11 +435,11 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
     <main>
       <section class="hero">
-        <p class="hero-eyebrow">Developer Hub</p>
-        <h1 class="hero-name">Build.<br />Operate.<br />Improve.</h1>
+        <p class="hero-eyebrow">jhwan.dev</p>
+        <h1 class="hero-name">작은 서비스를<br />만들고 운영합니다.</h1>
         <p class="hero-title">
-          <span>제품을 만들고, 직접 배포하고, 운영 중에 배운 것을 기록합니다.</span><br />
-          BabyWeather와 홈랩 인프라를 통해 작은 서비스를 오래 굴리는 방법을 실험하고 있습니다.
+          <span>아이날씨와 홈서버를 직접 만들고 배포합니다.</span><br />
+          쓰면서 고친 것들, 운영하면서 배운 것들을 조용히 기록합니다.
         </p>
         <div class="hero-cta">
           <a href="/blog/babyweather" class="btn-primary">BabyWeather 기록 보기 →</a>
