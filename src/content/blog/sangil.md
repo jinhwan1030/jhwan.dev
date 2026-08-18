@@ -3,6 +3,7 @@ title: '산길안심 — 출품까지 가지 못한 산악기상 안전 예보 �
 description: '산악기상, 산불, 산사태 위험을 하나의 Mountain Risk Index로 접고 한국어 안전 브리핑까지 만들었지만, 기획서 제출까지 이어지지 못한 프로젝트 회고.'
 pubDate: '2026-06-23'
 category: '프로젝트'
+draft: false
 ---
 
 ## 시작은 출품작이었다

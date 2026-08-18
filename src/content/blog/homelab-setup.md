@@ -3,6 +3,7 @@ title: '라즈베리파이로 DDNS + SSL + 자동배포까지 구축하기'
 description: "도메인 하나 사고 라즈베리파이에 웹서버 올리기까지. DDNS, Nginx Proxy Manager, Let's Encrypt, GitHub Actions 전부 연결한 홈랩 구축기"
 pubDate: '2026-05-17'
 category: '홈랩'
+draft: false
 ---
 
 ## 구성 목표

@@ -3,6 +3,7 @@ title: 'Cloudflare API로 DDNS 스크립트 만들기'
 description: 'dns/records가 아니라 dns_records였다.. 언더스코어 하나에 1시간 날린 삽질기'
 pubDate: '2026-05-17'
 category: '홈랩'
+draft: false
 ---
 
 ## 시작하기 전에

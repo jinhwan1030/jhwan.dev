@@ -40,6 +40,9 @@ jobs:
       - name: 홈페이지 빌드 및 초안 비공개 검사
         run: node scripts/validate-blog-output.mjs
 
+      - name: 내부 링크와 SEO 산출물 검사
+        run: node scripts/validate-site-output.mjs
+
   build:
     needs: validate
     runs-on: ubuntu-latest

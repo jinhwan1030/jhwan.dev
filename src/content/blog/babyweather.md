@@ -4,6 +4,7 @@ description: "기상청, 에어코리아, TMAP, 카카오맵 API를 활용해 �
 pubDate: '2026-05-29'
 updatedDate: '2026-08-18'
 category: '프로젝트'
+draft: false
 ---
 
 ## 왜 만들었나

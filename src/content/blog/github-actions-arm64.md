@@ -3,6 +3,7 @@ title: 'GitHub Actions로 arm64 Docker 이미지 빌드하기'
 description: '라즈베리파이에 배포하려면 arm64 빌드가 필요하다. 플랫폼 불일치로 컨테이너가 재시작 루프에 빠진 삽질기'
 pubDate: '2026-05-17'
 category: '홈랩'
+draft: false
 ---
 
 ## 문제 상황

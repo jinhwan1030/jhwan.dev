@@ -39,18 +39,19 @@ try {
 
   const blogIndex = fs.readFileSync(path.join(outputDirectory, 'blog/index.html'), 'utf8');
   const rss = fs.readFileSync(path.join(outputDirectory, 'rss.xml'), 'utf8');
-  const draftSlugs = collectMarkdownFiles(contentDirectory)
-    .filter((file) => {
-      const source = fs.readFileSync(file, 'utf8');
-      const frontmatter = source.match(/^---\s*\n([\s\S]*?)\n---/)?.[1] ?? '';
-      return /^draft:\s*true\s*$/m.test(frontmatter);
-    })
-    .map((file) =>
-      path
-        .relative(contentDirectory, file)
-        .replace(/\\/g, '/')
-        .replace(/\.mdx?$/, ''),
-    );
+  const blogEntries = collectMarkdownFiles(contentDirectory).map((file) => {
+    const source = fs.readFileSync(file, 'utf8');
+    const frontmatter = source.match(/^---\s*\n([\s\S]*?)\n---/)?.[1] ?? '';
+    const draftValue = frontmatter.match(/^draft:\s*(true|false)\s*$/m)?.[1];
+    const slug = path
+      .relative(contentDirectory, file)
+      .replace(/\\/g, '/')
+      .replace(/\.mdx?$/, '');
+
+    if (!draftValue) throw new Error(`Blog entry must declare draft: true or false: ${slug}`);
+    return { slug, draft: draftValue === 'true' };
+  });
+  const draftSlugs = blogEntries.filter((entry) => entry.draft).map((entry) => entry.slug);
 
   for (const slug of draftSlugs) {
     const detailPage = path.join(outputDirectory, 'blog', slug, 'index.html');
