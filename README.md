@@ -55,9 +55,6 @@ npm run preview   # 빌드 미리보기
 `main` 브랜치에 push하면 GitHub Actions가 멀티플랫폼 Docker 이미지를 빌드해 Docker Hub에 올린다.
 운영 이미지 이름은 `legyeseul/jhwan-homepage`이며, `latest`와 롤백 가능한 커밋별 태그를 함께 발행한다.
 
-라즈베리파이의 운영 컨테이너를 새 이미지로 옮기기 전까지는
-`legyeseul/jhwan-portfolio:latest`도 임시로 함께 발행한다.
-
 ```
 push to main
   → GitHub Actions (linux/amd64, linux/arm64 멀티플랫폼 빌드)

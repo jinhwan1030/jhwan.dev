@@ -68,6 +68,5 @@ jobs:
           tags: |
             legyeseul/jhwan-homepage:latest
             legyeseul/jhwan-homepage:sha-${{ github.sha }}
-            legyeseul/jhwan-portfolio:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
