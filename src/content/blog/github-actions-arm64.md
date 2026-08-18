@@ -88,6 +88,10 @@ EXPOSE 80
 
 SSH 배포를 쓰면 되지만, 국가별 접속 제한을 켜놨다면 GitHub Actions 서버(미국)가 차단된다. 그래서 cron pull 방식을 택했다.
 
+> **2026년 8월 운영 구조 업데이트:** 아래 스크립트는 초기 자동 배포 구현 기록이다.
+> 현재는 Docker Compose와 systemd timer를 사용하며, 새 컨테이너의 healthcheck가 실패하면
+> 직전 이미지로 자동 복구한다. 외부에서 SSH 포트를 열지 않는 outbound pull 원칙은 같다.
+
 라즈베리파이에 업데이트 스크립트를 만들고:
 
 ```bash

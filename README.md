@@ -9,7 +9,7 @@ Astro 기반 정적 사이트. 라즈베리파이 홈서버에서 Docker로 운�
 - **Framework**: [Astro](https://astro.build)
 - **Styling**: Tailwind CSS
 - **Deployment**: Docker + Raspberry Pi 4B
-- **CI/CD**: GitHub Actions → Docker Hub → Raspberry Pi pull
+- **CI/CD**: GitHub Actions → Docker Hub → systemd 자동 배포
 - **Proxy**: Nginx Proxy Manager + Let's Encrypt SSL
 - **DNS**: Cloudflare (DDNS)
 
@@ -53,5 +53,8 @@ npm run preview   # 빌드 미리보기
 push to main
   → GitHub Actions (linux/amd64, linux/arm64 멀티플랫폼 빌드)
   → Docker Hub (legyeseul/jhwan-homepage:latest, sha-<commit>)
-  → Raspberry Pi cron pull & restart
+  → Raspberry Pi systemd pull, healthcheck & rollback
 ```
+
+운영 Compose 원본은 [`deploy/raspberry-pi/compose.yml`](./deploy/raspberry-pi/compose.yml)에
+있습니다. 공통 자동 업데이터와 최초 설치기는 BabyWeather 저장소에서 관리합니다.

@@ -113,18 +113,22 @@ SSL 탭:
 
 Astro 정적 사이트를 Docker로 빌드해서 올린다. 자세한 내용은 [GitHub Actions로 arm64 Docker 이미지 빌드하기](/blog/github-actions-arm64) 참고.
 
+> **2026년 8월 운영 구조 업데이트:** 아래 `docker run`과 cron 방식은 홈서버를 처음
+> 구성했을 때의 기록이다. 현재는 운영 Compose와 systemd timer가 새 이미지를 확인하고,
+> healthcheck 실패 시 직전 이미지로 자동 복구한다.
+
 ```bash
 # 수동 배포 (처음 한 번)
 docker pull {도커허브아이디}/이미지이름:latest
 docker run -d --name portfolio -p 4321:80 --restart unless-stopped {도커허브아이디}/이미지이름:latest
 ```
 
-이후에는 GitHub Actions가 자동으로 빌드하고, 라즈베리파이 cron이 매분 새 이미지를 확인해서 자동 배포한다.
+초기에는 GitHub Actions가 자동으로 빌드하고, 라즈베리파이 cron이 매분 새 이미지를 확인하도록 구성했다.
 
 ## 보안 포인트
 
 - **81포트(NPM 관리자), 9443포트(Portainer)는 포트포워딩하지 않는다.** 외부에서 접근할 수 없다.
-- **SSH 22포트도 포트포워딩하지 않는다.** 원격 배포는 cron pull 방식으로 대체한다.
+- **SSH 22포트도 포트포워딩하지 않는다.** 배포는 라즈베리파이가 systemd timer로 이미지를 가져오는 outbound pull 방식으로 처리한다.
 - **국가별 접속 제한**을 켜서 한국 IP만 허용한다.
 - **NAS는 서브도메인으로 외부 노출하지 않는다.** WireGuard VPN으로만 접속한다.
 
