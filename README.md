@@ -30,6 +30,8 @@ src/
 │   └── rss.xml.js    # RSS 피드
 └── styles/
     └── global.css
+public/
+└── admin/            # Decap CMS 글 관리 화면과 콘텐츠 스키마
 ```
 
 ## Dev
@@ -40,6 +42,12 @@ npm run dev
 npm run build     # ./dist/ 빌드
 npm run preview   # 빌드 미리보기
 ```
+
+## Content Management
+
+글은 `/admin/`의 Decap CMS에서 작성하고, GitHub에 저장된 Markdown을 Astro가 빌드합니다.
+새 글은 기본적으로 초안이어서 공개 전 검토할 수 있습니다. 로컬 사용법과 게시 흐름은
+[`docs/content-management.md`](./docs/content-management.md)에 정리되어 있습니다.
 
 ## Deployment
 

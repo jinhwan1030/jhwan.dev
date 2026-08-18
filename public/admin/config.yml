@@ -1,0 +1,104 @@
+backend:
+  name: github
+  repo: jinhwan1030/jhwan.dev
+  branch: main
+  base_url: https://auth.jhwan.dev
+  auth_endpoint: auth
+  site_domain: jhwan.dev
+  commit_messages:
+    create: '글 작성: {{slug}}'
+    update: '글 수정: {{slug}}'
+    delete: '글 삭제: {{slug}}'
+    uploadMedia: '이미지 추가: {{path}}'
+    deleteMedia: '이미지 삭제: {{path}}'
+
+# 로컬에서는 `npx decap-server`가 현재 Git 저장소를 연결합니다.
+local_backend: true
+locale: ko
+publish_mode: simple
+site_url: https://jhwan.dev
+display_url: https://jhwan.dev
+logo:
+  src: https://jhwan.dev/favicon.svg?v=2
+  show_in_header: true
+show_preview_links: true
+
+media_folder: src/assets/blog
+public_folder: ../../assets/blog
+
+slug:
+  encoding: unicode
+  clean_accents: false
+  sanitize_replacement: '-'
+
+collections:
+  - name: blog
+    label: 블로그
+    label_singular: 글
+    description: jhwan.dev에 게시할 글을 작성하고 관리합니다.
+    folder: src/content/blog
+    create: true
+    delete: true
+    extension: md
+    format: frontmatter
+    slug: '{{slug}}'
+    preview_path: 'blog/{{slug}}/'
+    summary: '{{title}} · {{category}} · {{pubDate}}'
+    sortable_fields: [pubDate, updatedDate, title, category, draft]
+    view_filters:
+      - label: 초안
+        field: draft
+        pattern: true
+      - label: 공개 글
+        field: draft
+        pattern: false
+    fields:
+      - label: 제목
+        name: title
+        widget: string
+        hint: 글 목록과 브라우저 제목에 표시됩니다.
+      - label: 한 줄 설명
+        name: description
+        widget: text
+        hint: 글 목록과 검색 결과에 표시되는 짧은 소개입니다.
+      - label: 작성일
+        name: pubDate
+        widget: datetime
+        default: '{{now}}'
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+      - label: 수정일
+        name: updatedDate
+        widget: datetime
+        required: false
+        date_format: YYYY-MM-DD
+        time_format: false
+        format: YYYY-MM-DD
+        hint: 내용을 크게 수정했을 때만 입력합니다.
+      - label: 대표 이미지
+        name: heroImage
+        widget: image
+        required: false
+        choose_url: false
+        hint: 선택하지 않으면 카테고리 기본 이미지가 사용됩니다.
+      - label: 카테고리
+        name: category
+        widget: select
+        default: 개발
+        options:
+          - { label: 홈랩, value: 홈랩 }
+          - { label: ML/AI, value: ML/AI }
+          - { label: Android, value: Android }
+          - { label: 개발, value: 개발 }
+          - { label: 프로젝트, value: 프로젝트 }
+          - { label: 일상, value: 일상 }
+      - label: 초안으로 숨기기
+        name: draft
+        widget: boolean
+        default: true
+        hint: 켜져 있으면 저장되어도 홈페이지, 글 목록, RSS에 공개되지 않습니다.
+      - label: 본문
+        name: body
+        widget: markdown
+        modes: [rich_text, raw]
