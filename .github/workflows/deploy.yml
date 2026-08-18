@@ -6,7 +6,7 @@ on:
       - main
 
 concurrency:
-  group: jhwan-portfolio-deploy
+  group: jhwan-homepage-deploy
   cancel-in-progress: true
 
 env:
@@ -37,6 +37,9 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: legyeseul/jhwan-portfolio:latest
+          tags: |
+            legyeseul/jhwan-homepage:latest
+            legyeseul/jhwan-homepage:sha-${{ github.sha }}
+            legyeseul/jhwan-portfolio:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

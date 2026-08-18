@@ -9,7 +9,7 @@ Astro 기반 정적 사이트. 라즈베리파이 홈서버에서 Docker로 운�
 - **Framework**: [Astro](https://astro.build)
 - **Styling**: Tailwind CSS
 - **Deployment**: Docker + Raspberry Pi 4B
-- **CI/CD**: GitHub Actions → Docker Hub → cron pull
+- **CI/CD**: GitHub Actions → Docker Hub → Raspberry Pi pull
 - **Proxy**: Nginx Proxy Manager + Let's Encrypt SSL
 - **DNS**: Cloudflare (DDNS)
 
@@ -43,12 +43,15 @@ npm run preview   # 빌드 미리보기
 
 ## Deployment
 
-`main` 브랜치에 push하면 GitHub Actions가 Docker 이미지를 빌드해 Docker Hub에 올린다.
-라즈베리파이에서 1분마다 cron이 새 이미지를 감지하면 자동으로 업데이트한다.
+`main` 브랜치에 push하면 GitHub Actions가 멀티플랫폼 Docker 이미지를 빌드해 Docker Hub에 올린다.
+운영 이미지 이름은 `legyeseul/jhwan-homepage`이며, `latest`와 롤백 가능한 커밋별 태그를 함께 발행한다.
+
+라즈베리파이의 운영 컨테이너를 새 이미지로 옮기기 전까지는
+`legyeseul/jhwan-portfolio:latest`도 임시로 함께 발행한다.
 
 ```
 push to main
   → GitHub Actions (linux/amd64, linux/arm64 멀티플랫폼 빌드)
-  → Docker Hub (legyeseul/jhwan-portfolio:latest)
+  → Docker Hub (legyeseul/jhwan-homepage:latest, sha-<commit>)
   → Raspberry Pi cron pull & restart
 ```
