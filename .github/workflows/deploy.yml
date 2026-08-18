@@ -34,8 +34,11 @@ jobs:
       - name: CMS 설정 회귀 테스트
         run: node scripts/validate-cms-config.test.mjs
 
-      - name: 홈페이지 빌드 검사
-        run: npm run build
+      - name: Astro 검사
+        run: npm run check
+
+      - name: 홈페이지 빌드 및 초안 비공개 검사
+        run: node scripts/validate-blog-output.mjs
 
   build:
     needs: validate
