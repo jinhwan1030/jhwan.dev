@@ -22,6 +22,10 @@ logo:
   show_in_header: true
 show_preview_links: true
 
+# Sveltia의 전역 자산 라이브러리에 필요한 저장소 절대 경로입니다.
+media_folder: /src/assets/blog
+public_folder: /src/assets/blog
+
 slug:
   encoding: unicode
   clean_accents: false
