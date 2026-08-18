@@ -1,6 +1,6 @@
 # 글 관리
 
-jhwan.dev의 글은 `/admin/`에 설치한 Decap CMS에서 작성합니다. CMS가 생성한 Markdown과
+jhwan.dev의 글은 `/admin/`에 설치한 Sveltia CMS에서 작성합니다. CMS가 생성한 Markdown과
 업로드 이미지는 기존 Astro 콘텐츠 구조에 저장되므로, 별도의 데이터베이스나 런타임
 관리자 서버는 필요하지 않습니다.
 
@@ -33,6 +33,9 @@ npm run dev
 로컬 프록시는 현재 Git 저장소에 직접 연결되므로 테스트 중 저장을 누르면 실제 파일이
 변경됩니다. 확인용 글은
 **초안으로 숨기기**를 유지하고, 생성된 변경을 검토한 뒤 커밋합니다.
+
+`decap-server`는 로컬 Git 연결에만 사용하는 호환 프록시입니다. 실제 관리자 화면은
+Sveltia CMS이며, 운영 환경에서는 이 로컬 프록시를 사용하지 않습니다.
 
 ## 운영 인증
 
@@ -100,6 +103,6 @@ Cloudflare에 저장된 `GITHUB_OAUTH_ID`와 `GITHUB_OAUTH_SECRET`은 이후 코
 curl --fail https://auth.jhwan.dev/health
 ```
 
-`jhwan CMS OAuth proxy: ok`가 나오면 `https://jhwan.dev/admin/`에서 **Login with GitHub**를
+`jhwan CMS OAuth proxy: ok`가 나오면 `https://jhwan.dev/admin/`에서 **GitHub로 로그인**을
 선택합니다. 로그인한 GitHub 계정에 `jinhwan1030/jhwan.dev` 쓰기 권한이 있어야 글을
 저장할 수 있습니다.

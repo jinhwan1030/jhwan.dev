@@ -5,6 +5,7 @@ backend:
   base_url: https://auth.jhwan.dev
   auth_endpoint: auth
   auth_scope: public_repo
+  auth_methods: [oauth]
   site_domain: jhwan.dev
   commit_messages:
     create: '글 작성: {{slug}}'
@@ -13,7 +14,7 @@ backend:
     uploadMedia: '이미지 추가: {{path}}'
     deleteMedia: '이미지 삭제: {{path}}'
 
-# 로컬에서는 `npx decap-server`가 현재 Git 저장소를 연결합니다.
+# 로컬에서는 Git 프록시가 현재 저장소를 연결합니다.
 local_backend: true
 locale: ko
 publish_mode: simple
@@ -36,7 +37,6 @@ collections:
   - name: blog
     label: 블로그
     label_singular: 글
-    description: jhwan.dev에 게시할 글을 작성하고 관리합니다.
     folder: src/content/blog
     create: true
     delete: true
@@ -45,7 +45,11 @@ collections:
     slug: '{{slug}}'
     preview_path: 'blog/{{slug}}/'
     summary: '{{title}} · {{category}} · {{pubDate}}'
-    sortable_fields: [pubDate, updatedDate, title, category, draft]
+    sortable_fields:
+      fields: [pubDate, updatedDate, title, category, draft]
+      default:
+        field: pubDate
+        direction: descending
     view_filters:
       - label: 초안
         field: draft

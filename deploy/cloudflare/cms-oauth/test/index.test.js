@@ -99,7 +99,7 @@ describe('CMS OAuth Worker', () => {
     assert.match(await result.text(), /authorization:github:error/);
   });
 
-  it('exchanges the code and completes the Decap handshake', async () => {
+  it('exchanges the code and completes the CMS handshake', async () => {
     const authResult = await handleRequest(
       new Request('https://auth.jhwan.dev/auth?provider=github&site_id=jhwan.dev'),
       ENV,
