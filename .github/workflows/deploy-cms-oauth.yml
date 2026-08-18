@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/deploy-cms-oauth.yml'
-      - 'deploy/cloudflare/cms-oauth/**'
+      - ".github/workflows/deploy-cms-oauth.yml"
+      - "deploy/cloudflare/cms-oauth/**"
   workflow_dispatch:
 
 concurrency:
@@ -62,6 +62,21 @@ jobs:
             echo 'Cloudflare GitHub Secrets가 없어 Worker 배포를 건너뜁니다.'
           fi
 
-      - name: Worker 배포
+      - name: Worker 버전 업로드
         if: steps.cloudflare.outputs.enabled == 'true'
-        run: npx --yes wrangler@4.123.0 deploy
+        env:
+          VERSION_TAG: github-${{ github.run_id }}-${{ github.run_attempt }}
+        run: >-
+          npx --yes wrangler@4.123.0 versions upload
+          --tag "$VERSION_TAG"
+          --message "GitHub Actions ${GITHUB_SHA}"
+
+      - name: Worker 버전 배포
+        if: steps.cloudflare.outputs.enabled == 'true'
+        env:
+          VERSION_TAG: github-${{ github.run_id }}-${{ github.run_attempt }}
+        run: >-
+          npx --yes wrangler@4.123.0 versions deploy
+          --version-tag "$VERSION_TAG"
+          --message "GitHub Actions ${GITHUB_SHA}"
+          --yes

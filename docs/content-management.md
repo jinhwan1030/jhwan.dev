@@ -84,10 +84,13 @@ TLS 인증서가 필요하지 않습니다. 같은 이름의 기존 DNS 레코�
 GitHub 저장소의 `cms-oauth` Environment 또는 Repository Secrets에 아래 값을 등록합니다.
 
 - `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`: Cloudflare Workers 편집 권한을 가진 전용 토큰
+- `CLOUDFLARE_API_TOKEN`: 해당 계정의 Workers Scripts 편집 권한만 가진 전용 토큰
 
 두 값이 있으면 `.github/workflows/deploy-cms-oauth.yml`이 Worker 관련 변경을 테스트한 뒤
-자동 배포합니다. 값이 아직 없으면 테스트만 통과하고 배포 단계는 안전하게 건너뜁니다.
+자동 배포합니다. 자동 배포는 최초 설치에서 연결한 `auth.jhwan.dev` 도메인과 Route를
+변경하지 않고 새 Worker 버전만 업로드하고 활성화합니다. 따라서 CI 토큰에는 Billing,
+DNS, Workers Routes 권한이 필요하지 않습니다. 값이 아직 없으면 테스트만 통과하고 배포
+단계는 안전하게 건너뜁니다.
 Cloudflare에 저장된 `GITHUB_OAUTH_ID`와 `GITHUB_OAUTH_SECRET`은 이후 코드 배포에서도
 유지됩니다.
 
