@@ -48,6 +48,9 @@ jobs:
       run:
         working-directory: deploy/cloudflare/cms-oauth
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
       - name: Cloudflare 배포 설정 확인
         id: cloudflare
         shell: bash
@@ -58,10 +61,6 @@ jobs:
             echo 'enabled=false' >> "$GITHUB_OUTPUT"
             echo 'Cloudflare GitHub Secrets가 없어 Worker 배포를 건너뜁니다.'
           fi
-
-      - name: Checkout
-        if: steps.cloudflare.outputs.enabled == 'true'
-        uses: actions/checkout@v6
 
       - name: Worker 배포
         if: steps.cloudflare.outputs.enabled == 'true'
