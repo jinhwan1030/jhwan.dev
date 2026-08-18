@@ -1,0 +1,20 @@
+{
+  "name": "jhwan-cms-oauth",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-18",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "auth.jhwan.dev",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "CMS_ORIGIN": "https://jhwan.dev",
+    "OAUTH_CALLBACK_URL": "https://auth.jhwan.dev/callback",
+    "GITHUB_SCOPE": "public_repo"
+  },
+  "secrets": {
+    "required": ["GITHUB_OAUTH_ID", "GITHUB_OAUTH_SECRET"]
+  }
+}

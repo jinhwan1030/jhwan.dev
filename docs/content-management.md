@@ -36,7 +36,67 @@ npm run dev
 
 ## 운영 인증
 
-CMS 설정은 GitHub 저장소 `jinhwan1030/jhwan.dev`와 `auth.jhwan.dev` OAuth 프록시를
-사용하도록 준비되어 있습니다. 운영 로그인을 사용하려면 GitHub OAuth App과 Cloudflare
-Worker에 Client ID와 Client Secret을 연결해야 합니다. 비밀값은 저장소나 Docker 이미지에
-넣지 않습니다.
+CMS는 GitHub 저장소 `jinhwan1030/jhwan.dev`와 `auth.jhwan.dev`의 Cloudflare Worker를
+사용합니다. Worker 소스와 테스트는 `deploy/cloudflare/cms-oauth/`에 있으며, Client Secret은
+저장소나 Docker 이미지에 넣지 않습니다.
+
+### 1. GitHub OAuth App 만들기
+
+GitHub **Settings → Developer settings → OAuth Apps → New OAuth App**에서 다음 값으로
+만듭니다.
+
+- Application name: `jhwan.dev CMS`
+- Homepage URL: `https://jhwan.dev/admin/`
+- Authorization callback URL: `https://auth.jhwan.dev/callback`
+
+발급된 Client ID와 Client Secret은 다음 단계에서만 사용합니다. `jhwan.dev` 저장소는
+공개 저장소이므로 CMS 설정과 Worker는 전체 비공개 저장소 권한이 아닌 `public_repo`
+scope만 요청합니다. GitHub OAuth App의 scope는 특정 저장소 하나로 한정되지는 않으므로,
+관리자용 OAuth App으로만 사용하고 불필요해지면 GitHub에서 폐기합니다.
+
+### 2. Worker 최초 배포
+
+```bash
+cd deploy/cloudflare/cms-oauth
+cp .dev.vars.example .dev.vars
+```
+
+`.dev.vars`에 방금 발급한 두 값을 입력합니다. 이 파일은 Git에서 제외됩니다.
+
+```dotenv
+GITHUB_OAUTH_ID="..."
+GITHUB_OAUTH_SECRET="..."
+```
+
+Cloudflare 로그인 후 두 값을 암호화된 Worker Secret으로 함께 올리며 최초 배포합니다.
+
+```bash
+npx --yes wrangler@4.123.0 login
+npm run deploy -- --secrets-file .dev.vars
+```
+
+`wrangler.jsonc`가 `auth.jhwan.dev`를 Worker Custom Domain으로 등록하므로 별도 원본 서버나
+TLS 인증서가 필요하지 않습니다. 같은 이름의 기존 DNS 레코드가 있다면 최초 배포 전에
+제거해야 합니다.
+
+### 3. 이후 push 자동 배포
+
+GitHub 저장소의 `cms-oauth` Environment 또는 Repository Secrets에 아래 값을 등록합니다.
+
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_TOKEN`: Cloudflare Workers 편집 권한을 가진 전용 토큰
+
+두 값이 있으면 `.github/workflows/deploy-cms-oauth.yml`이 Worker 관련 변경을 테스트한 뒤
+자동 배포합니다. 값이 아직 없으면 테스트만 통과하고 배포 단계는 안전하게 건너뜁니다.
+Cloudflare에 저장된 `GITHUB_OAUTH_ID`와 `GITHUB_OAUTH_SECRET`은 이후 코드 배포에서도
+유지됩니다.
+
+### 4. 확인
+
+```bash
+curl --fail https://auth.jhwan.dev/health
+```
+
+`jhwan CMS OAuth proxy: ok`가 나오면 `https://jhwan.dev/admin/`에서 **Login with GitHub**를
+선택합니다. 로그인한 GitHub 계정에 `jinhwan1030/jhwan.dev` 쓰기 권한이 있어야 글을
+저장할 수 있습니다.

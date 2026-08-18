@@ -1,0 +1,12 @@
+{
+  "name": "jhwan-cms-oauth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/index.js",
+    "deploy": "npx --yes wrangler@4.123.0 deploy",
+    "dev": "npx --yes wrangler@4.123.0 dev",
+    "test": "node test/index.test.js"
+  }
+}

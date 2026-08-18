@@ -10,6 +10,7 @@ Astro 기반 정적 사이트. 라즈베리파이 홈서버에서 Docker로 운�
 - **Styling**: Tailwind CSS
 - **Deployment**: Docker + Raspberry Pi 4B
 - **CI/CD**: GitHub Actions → Docker Hub → systemd 자동 배포
+- **CMS**: Decap CMS + GitHub OAuth + Cloudflare Worker
 - **Proxy**: Nginx Proxy Manager + Let's Encrypt SSL
 - **DNS**: Cloudflare (DDNS)
 

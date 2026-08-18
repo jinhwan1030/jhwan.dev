@@ -4,6 +4,7 @@ backend:
   branch: main
   base_url: https://auth.jhwan.dev
   auth_endpoint: auth
+  auth_scope: public_repo
   site_domain: jhwan.dev
   commit_messages:
     create: '글 작성: {{slug}}'
