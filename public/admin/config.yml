@@ -14,9 +14,6 @@ backend:
     uploadMedia: '이미지 추가: {{path}}'
     deleteMedia: '이미지 삭제: {{path}}'
 
-# 로컬에서는 Git 프록시가 현재 저장소를 연결합니다.
-local_backend: true
-locale: ko
 publish_mode: simple
 site_url: https://jhwan.dev
 display_url: https://jhwan.dev
@@ -24,9 +21,6 @@ logo:
   src: https://jhwan.dev/favicon.svg?v=2
   show_in_header: true
 show_preview_links: true
-
-media_folder: src/assets/blog
-public_folder: ../../assets/blog
 
 slug:
   encoding: unicode
@@ -38,6 +32,9 @@ collections:
     label: 블로그
     label_singular: 글
     folder: src/content/blog
+    # Astro의 image()가 처리할 수 있도록 게시글 기준 상대 경로를 저장합니다.
+    media_folder: ../../assets/blog
+    public_folder: ../../assets/blog
     create: true
     delete: true
     extension: md

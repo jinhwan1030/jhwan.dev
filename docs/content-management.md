@@ -18,24 +18,20 @@ jhwan.dev의 글은 `/admin/`에 설치한 Sveltia CMS에서 작성합니다. CM
 
 ## 로컬 확인
 
-터미널 두 개에서 저장소 루트를 기준으로 각각 실행합니다.
-
-```bash
-npx decap-server
-```
+저장소 루트에서 개발 서버를 실행합니다.
 
 ```bash
 npm run dev
 ```
 
-그런 다음 `http://localhost:4321/admin/index.html`에 접속합니다. Astro 개발 서버에서는
-정적 폴더의 `index.html` 경로를 직접 사용하며, 운영 Nginx에서는 `/admin/`으로 접속합니다.
-로컬 프록시는 현재 Git 저장소에 직접 연결되므로 테스트 중 저장을 누르면 실제 파일이
-변경됩니다. 확인용 글은
-**초안으로 숨기기**를 유지하고, 생성된 변경을 검토한 뒤 커밋합니다.
+그런 다음 Chromium 기반 브라우저에서 `http://localhost:4321/admin/index.html`에 접속해
+**Work with Local Repository**를 누르고 `jhwan.dev` 저장소 루트를 선택합니다. 별도 프록시
+서버는 필요하지 않습니다. Astro 개발 서버에서는 정적 폴더의 `index.html` 경로를 직접
+사용하며, 운영 Nginx에서는 `/admin/`으로 접속합니다.
 
-`decap-server`는 로컬 Git 연결에만 사용하는 호환 프록시입니다. 실제 관리자 화면은
-Sveltia CMS이며, 운영 환경에서는 이 로컬 프록시를 사용하지 않습니다.
+로컬 저장소 모드에서 저장하면 실제 파일이 변경됩니다. 확인용 글은 **초안으로 숨기기**를
+유지하고, 생성된 변경을 검토한 뒤 직접 커밋합니다. 이 기능은 File System Access API를
+사용하므로 Firefox와 Safari가 아닌 Chrome, Edge 등 Chromium 기반 브라우저가 필요합니다.
 
 ## 운영 인증
 
