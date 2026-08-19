@@ -37,6 +37,12 @@ jobs:
       - name: Astro 검사
         run: npm run check
 
+      - name: 콘텐츠 DB 기반 검사
+        run: npm run test:db
+
+      - name: 기존 Markdown 가져오기 사전 검사
+        run: npm run db:import
+
       - name: 홈페이지 빌드 및 초안 비공개 검사
         run: node scripts/validate-blog-output.mjs
 

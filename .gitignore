@@ -3,6 +3,11 @@ dist/
 # generated types
 .astro/
 
+# local content database
+.data/
+*.db-shm
+*.db-wal
+
 # dependencies
 node_modules/
 
