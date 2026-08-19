@@ -3,8 +3,18 @@ services:
     image: legyeseul/jhwan-homepage:latest
     container_name: jhwan-homepage
     restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      JHWAN_ADMIN_ENABLED: "${JHWAN_ADMIN_ENABLED:-false}"
+      JHWAN_DATABASE_PATH: /data/jhwan.db
+      JHWAN_MEDIA_PATH: /data/uploads
+      ADMIN_GITHUB_USER_ID: "${ADMIN_GITHUB_USER_ID:?ADMIN_GITHUB_USER_ID is required}"
+      ADMIN_LOGIN_TICKET_SECRET: "${ADMIN_LOGIN_TICKET_SECRET:?ADMIN_LOGIN_TICKET_SECRET is required}"
     ports:
       - "4321:80"
+    volumes:
+      - ./data:/data
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/blog/ >/dev/null || exit 1"]
       interval: 30s

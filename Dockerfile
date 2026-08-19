@@ -17,11 +17,18 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY database ./database
+COPY scripts/lib ./scripts/lib
+COPY scripts/backup-content-database.mjs scripts/invalidate-admin-sessions.mjs scripts/migrate-legacy-content.mjs scripts/verify-content-backup.mjs ./scripts/
+COPY src/lib/server ./src/lib/server
 COPY src/content/blog ./src/content/blog
+COPY src/assets/blog ./src/assets/blog
+COPY deploy/raspberry-pi/container-entrypoint.sh /usr/local/bin/jhwan-homepage-entrypoint
 RUN apk add --no-cache libcap \
     && setcap cap_net_bind_service=+ep /usr/local/bin/node \
     && mkdir -p /app/.data \
-    && chown node:node /app/.data
+    && chown node:node /app/.data \
+    && chmod 0755 /usr/local/bin/jhwan-homepage-entrypoint
 USER node
 EXPOSE 80
+ENTRYPOINT ["/usr/local/bin/jhwan-homepage-entrypoint"]
 CMD ["node", "./dist/server/entry.mjs"]

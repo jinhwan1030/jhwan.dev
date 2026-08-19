@@ -11,7 +11,7 @@ Astro Node 기반 개인 홈페이지와 SQLite 블로그. 라즈베리파이 �
 - **Styling**: Tailwind CSS
 - **Deployment**: Docker + Raspberry Pi 4B
 - **CI/CD**: GitHub Actions → Docker Hub → systemd 자동 배포
-- **Admin**: 자체 Content Studio + GitHub OAuth + Cloudflare Worker (운영 전환 준비 중)
+- **Admin**: 자체 Content Studio + GitHub OAuth + Cloudflare Worker
 - **Proxy**: Nginx Proxy Manager + Let's Encrypt SSL
 - **DNS**: Cloudflare (DDNS)
 
@@ -50,14 +50,15 @@ npm run preview   # 빌드 미리보기
 
 ## Content Management
 
-현재 운영 `/admin/`은 전환 안전망으로 Sveltia CMS를 유지합니다. 홈페이지 런타임은 빈 SQLite를
-현재 Markdown으로 한 번 초기화한 뒤 목록·상세·RSS·사이트맵을 DB에서 즉시 렌더링합니다. 영구
-볼륨과 백업을 적용한 뒤 새 Content Studio를 운영 `/admin/`에 연결합니다. 기존 게시 흐름은
+현재 운영 `/admin/`은 UI 전환 안전망으로 Sveltia CMS를 유지합니다. 홈페이지 런타임은 Raspberry Pi의
+영속 SQLite에서 목록·상세·RSS·사이트맵을 즉시 렌더링합니다. 최초 설치 때 기존 Markdown과 미디어를
+한 번 이전하고 검증 백업이 성공한 뒤 관리자 API를 엽니다. 새 Content Studio를 운영 `/admin/`에
+연결하는 작업은 다음 구간입니다. 기존 게시 흐름은
 [`docs/content-management.md`](./docs/content-management.md)에 정리되어 있습니다.
 
 기존 Markdown과 `src/assets/blog` 이미지는 `npm run db:migrate-legacy`로 쓰기 없는 사전 검사를
-할 수 있습니다. 실제 이전은 DB와 업로드 대상 경로를 모두 명시해야 하며, Raspberry Pi 영구
-볼륨과 백업을 준비하는 배포 단계에서만 실행합니다. 세부 절차는
+할 수 있습니다. 운영에서는 컨테이너 entrypoint가 비어 있는 영속 저장소에 한 번만 적용하며,
+첫 검증 백업 전에는 관리자 쓰기를 열지 않습니다. 세부 절차는
 [`docs/content-database.md`](./docs/content-database.md)에 정리되어 있습니다.
 
 ## Deployment
@@ -73,4 +74,5 @@ push to main
 ```
 
 운영 Compose 원본은 [`deploy/raspberry-pi/compose.yml`](./deploy/raspberry-pi/compose.yml)에
-있습니다. 공통 자동 업데이터와 최초 설치기는 BabyWeather 저장소에서 관리합니다.
+있습니다. `./data`에 DB·업로드를 영속화하고 매일 검증 백업을 14개 보존합니다. 공통 자동
+업데이터와 최초 설치기는 BabyWeather 저장소에서 관리합니다.

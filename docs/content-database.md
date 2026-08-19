@@ -1,7 +1,7 @@
 # 콘텐츠 DB 런타임
 
-> 홈페이지는 Astro Node 서버가 SQLite에서 게시글을 읽어 동적으로 응답합니다. Raspberry Pi의
-> 영구 볼륨과 백업은 다음 배포 구간에서 연결하므로 관리자 쓰기는 기본적으로 비활성화합니다.
+> 홈페이지는 Astro Node 서버가 Raspberry Pi의 영속 SQLite에서 게시글을 읽어 동적으로 응답합니다.
+> 최초 검증 백업이 성공한 뒤에만 관리자 쓰기를 활성화합니다.
 
 ## 구성
 
@@ -9,13 +9,13 @@
 - 마이그레이션: `database/migrations/*.sql`
 - 기본 개발 경로: `.data/jhwan.db` (Git 제외)
 - 기본 개발 미디어 경로: `.data/uploads` (Git 제외)
-- 컨테이너 임시 경로: `/app/.data/jhwan.db`
-- 컨테이너 임시 미디어 경로: `/app/.data/uploads`
-- 운영 영구 경로: 이후 Raspberry Pi의 Docker 영구 볼륨으로 별도 지정
+- 컨테이너 운영 경로: `/data/jhwan.db`, `/data/uploads`
+- Raspberry Pi 영구 경로: `/home/jinhwan/projects/jhwan-homepage/data`
+- 검증 백업 경로: `/home/jinhwan/backups/jhwan-homepage/YYYYMMDD-HHMMSS`
 - 보호 장치: 외래 키, WAL, 무결성 검사, 마이그레이션 체크섬, 쓰기 트랜잭션
 
 DB에는 게시글 본문과 메타데이터, 수정 이력, 미디어 메타데이터만 저장합니다. 이미지 파일 자체는
-DB BLOB으로 넣지 않고 이후 영구 업로드 볼륨에 저장합니다.
+DB BLOB으로 넣지 않고 영구 업로드 디렉터리에 저장합니다.
 
 ## 검사
 
@@ -55,8 +55,8 @@ npm run db:migrate-legacy
 - 실패 시 이번 실행에서 새로 복사한 미디어 파일만 제거
 - 재실행 시 동일 게시글과 미디어를 변경하지 않는 멱등성 보장
 
-실제 적용 명령은 다음과 같습니다. 이 명령은 7단계에서 Raspberry Pi 영구 볼륨과 자동 백업을
-준비한 뒤 실행하며, 현재 임시 컨테이너 경로에는 실행하지 않습니다.
+실제 적용 명령은 다음과 같습니다. 운영 컨테이너 entrypoint가 최초 실행 때 같은 작업을 수행하고
+완료 표시를 원자적으로 만든 뒤, 다음 실행부터 건너뜁니다.
 
 ```bash
 npm run db:migrate-legacy -- \
@@ -87,7 +87,8 @@ npm run db:import -- --apply --database .data/jhwan.db
 ## 관리자 API 기반
 
 관리자 HTTP API는 `/api/admin/*`에 구현되어 있지만 `JHWAN_ADMIN_ENABLED=true`일 때만 열립니다.
-영구 저장소가 없는 현재 운영 Compose에서는 이 값을 설정하지 않으므로 API가 `503`으로 닫힙니다.
+최초 설치기는 관리자 API가 `503`인 상태에서 영속 저장소 이전과 첫 백업을 검증한 뒤 활성화하며,
+인증되지 않은 `/api/admin/session` 응답이 `401`인지 확인합니다.
 구현된 보호 장치는 다음과 같습니다.
 
 - OAuth Worker가 발급할 HS256 1회용 로그인 티켓 검증
@@ -146,7 +147,7 @@ DB에 글이 하나라도 있으면 이후 시작 시 Markdown을 다시 가져�
 ## 운영 활성화에 필요한 환경 변수
 
 다음 값은 코드나 이미지에 넣지 않고 Raspberry Pi와 Cloudflare Worker의 secret으로 각각
-설정합니다. 실제 활성화는 영구 볼륨·백업을 붙이는 배포 구간에서 수행합니다.
+설정합니다. 홈페이지 secret은 Raspberry Pi의 `.env`에만 권한 `0600`으로 저장합니다.
 
 ```text
 JHWAN_ADMIN_ENABLED=true
@@ -154,4 +155,26 @@ JHWAN_DATABASE_PATH=/data/jhwan.db
 JHWAN_MEDIA_PATH=/data/uploads
 ADMIN_GITHUB_USER_ID=<숫자 GitHub 사용자 ID>
 ADMIN_LOGIN_TICKET_SECRET=<양쪽에 동일한 32바이트 이상 임의 값>
+```
+
+## 운영 백업과 복구
+
+백업은 실행 중인 컨테이너와 정확히 같은 이미지의 Node `sqlite.backup()`을 사용해 DB 온라인 사본을
+만듭니다. 이어서 미디어를 복사하고 별도 컨테이너에서 SQLite 무결성·외래 키·미디어 크기·내용
+해시를 검사합니다. 검사가 끝난 백업에만 전체 SHA-256 목록을 기록하고 완성 이름을 부여합니다.
+
+```bash
+systemctl status jhwan-homepage-backup.timer
+sudo systemctl start jhwan-homepage-backup.service
+journalctl -u jhwan-homepage-backup.service --since today
+```
+
+복구는 먼저 목록 조회와 사전 검증을 수행합니다. 실제 적용 전 현 운영 데이터를 다시 백업하고,
+DB·미디어 교체 후 healthcheck가 실패하면 직전 상태로 되돌립니다. 성공 시 복구된 DB의 모든 활성
+관리자 세션을 폐기합니다.
+
+```bash
+/usr/local/sbin/jhwan-homepage-restore
+/usr/local/sbin/jhwan-homepage-restore --backup YYYYMMDD-HHMMSS
+/usr/local/sbin/jhwan-homepage-restore --apply --backup YYYYMMDD-HHMMSS
 ```

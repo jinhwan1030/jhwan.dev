@@ -1,0 +1,21 @@
+[Unit]
+Description=Create and verify a jhwan.dev content backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=__DEPLOY_USER__
+Group=docker
+Environment=JHWAN_HOMEPAGE_DIR=__HOMEPAGE_DIR__
+Environment=JHWAN_HOMEPAGE_BACKUP_ROOT=__BACKUP_ROOT__
+ExecStart=/usr/local/sbin/jhwan-homepage-backup
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=__HOMEPAGE_DIR__/data __BACKUP_ROOT__ /run/lock
+
+[Install]
+WantedBy=multi-user.target

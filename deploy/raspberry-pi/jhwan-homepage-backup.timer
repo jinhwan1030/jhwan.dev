@@ -1,0 +1,12 @@
+[Unit]
+Description=Back up jhwan.dev content every day
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+AccuracySec=5min
+RandomizedDelaySec=15min
+Persistent=true
+Unit=jhwan-homepage-backup.service
+
+[Install]
+WantedBy=timers.target
