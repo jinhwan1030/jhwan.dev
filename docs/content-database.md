@@ -57,3 +57,29 @@ npm run db:import -- --apply --database .data/jhwan.db
 
 GitHub access token은 새 관리자 화면이나 Raspberry Pi DB에 저장하지 않습니다. OAuth Worker와
 홈페이지 서버가 공유할 로그인 티켓 서명 키는 운영 연결 구간에서 별도 secret으로 등록합니다.
+
+## 새 관리자 화면 미리보기
+
+DB 관리자 API와 연결하기 전에 글쓰기 흐름을 독립적으로 검증하는 화면은 `admin/`에 있습니다.
+현재 운영 `/admin/`과 Docker 이미지에는 포함되지 않으며, 메모리 안의 예시 글만 사용하는 개발용
+미리보기입니다.
+
+```bash
+npm run admin:dev
+npm run test:admin-ui
+npm run admin:build
+```
+
+화면은 데스크톱에서 글 목록, 편집기, 게시 설정을 한 화면에 배치하고 각 영역만 독립적으로
+스크롤합니다. 작은 화면에서는 글 목록과 게시 설정을 필요할 때 여는 구조입니다. 제공 기능은
+다음과 같습니다.
+
+- WYSIWYG 편집, Markdown 원문 편집, 게시물 미리보기
+- 제목, slug, 설명, 카테고리, 공개 상태와 공개 시각 관리
+- 검색과 상태 필터, 새 글, 저장, 소프트 삭제, 복구, 수정 이력
+- 저장하지 않은 변경 감지, `Ctrl/Cmd+S`, 브라우저 임시 저장본 복구
+- Markdown 표와 코드 블록 왕복 변환 회귀 테스트
+
+시각 편집기는 Tiptap의 Markdown 확장을 사용합니다. 해당 확장은 현재 Beta이므로 Markdown 원문
+모드를 항상 함께 제공하며, 표와 코드 블록을 포함한 왕복 변환을 CI에서 검사합니다. 운영 API,
+이미지 업로드, 인증, 실제 DB 저장은 다음 연결 구간에서 이 독립 빌드에 붙입니다.

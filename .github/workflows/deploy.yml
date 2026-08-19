@@ -40,6 +40,12 @@ jobs:
       - name: 콘텐츠 DB 기반 검사
         run: npm run test:db
 
+      - name: 새 관리자 UI 회귀 테스트
+        run: npm run test:admin-ui
+
+      - name: 새 관리자 UI 독립 빌드
+        run: npm run admin:build
+
       - name: 기존 Markdown 가져오기 사전 검사
         run: npm run db:import
 

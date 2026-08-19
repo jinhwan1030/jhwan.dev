@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#f8fafc" />
+    <title>jhwan.dev 관리자 미리보기</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#post-title">편집기로 바로 이동</a>
+
+    <header class="topbar">
+      <div class="topbar-start">
+        <button class="icon-button mobile-only" id="sidebar-toggle" type="button" aria-label="글 목록 열기">
+          <span aria-hidden="true">☰</span>
+        </button>
+        <a class="brand" href="#" aria-label="jhwan.dev 관리자 홈">
+          <span class="brand-mark" aria-hidden="true">J</span>
+          <span>
+            <strong>jhwan.dev</strong>
+            <small>Content Studio</small>
+          </span>
+        </a>
+        <span class="preview-badge">로컬 미리보기</span>
+      </div>
+
+      <div class="save-indicator" id="save-indicator" role="status" aria-live="polite">
+        <span class="save-dot" aria-hidden="true"></span>
+        <span id="save-label">저장됨</span>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="button button-ghost" id="open-history" type="button">수정 이력</button>
+        <button class="button button-primary" id="save-post" type="button">
+          <span class="button-label">저장</span>
+          <kbd>⌘S</kbd>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-shell">
+      <aside class="post-sidebar" id="post-sidebar" aria-label="게시글 목록">
+        <div class="sidebar-header">
+          <div>
+            <p class="eyebrow">Content</p>
+            <h1>게시글</h1>
+          </div>
+          <button class="new-post-button" id="new-post" type="button">
+            <span aria-hidden="true">＋</span> 새 글
+          </button>
+        </div>
+
+        <div class="sidebar-controls">
+          <label class="search-field">
+            <span class="visually-hidden">게시글 검색</span>
+            <span aria-hidden="true">⌕</span>
+            <input id="post-search" type="search" placeholder="제목이나 주소 검색" autocomplete="off" />
+          </label>
+          <div class="filter-tabs" id="status-filters" role="tablist" aria-label="게시 상태 필터">
+            <button class="is-active" type="button" role="tab" data-filter="all" aria-selected="true">전체</button>
+            <button type="button" role="tab" data-filter="draft" aria-selected="false">초안</button>
+            <button type="button" role="tab" data-filter="published" aria-selected="false">공개</button>
+            <button type="button" role="tab" data-filter="deleted" aria-selected="false">휴지통</button>
+          </div>
+        </div>
+
+        <div class="post-list-summary">
+          <span id="post-count">불러오는 중</span>
+          <button id="refresh-posts" type="button">새로고침</button>
+        </div>
+
+        <div class="post-list" id="post-list" tabindex="0" aria-live="polite">
+          <div class="list-skeleton" aria-hidden="true"></div>
+          <div class="list-skeleton" aria-hidden="true"></div>
+          <div class="list-skeleton" aria-hidden="true"></div>
+        </div>
+      </aside>
+
+      <button class="sidebar-scrim" id="sidebar-scrim" type="button" aria-label="글 목록 닫기"></button>
+
+      <main class="editor-workspace" id="main-content">
+        <section class="editor-column" aria-label="게시글 편집">
+          <div class="document-header">
+            <div class="document-path">
+              <span>게시글</span>
+              <span aria-hidden="true">/</span>
+              <span id="document-state-label">초안</span>
+            </div>
+            <input
+              class="title-input"
+              id="post-title"
+              name="title"
+              type="text"
+              maxlength="200"
+              placeholder="글 제목을 입력하세요"
+              autocomplete="off"
+              aria-label="글 제목"
+            />
+            <div class="document-meta-line">
+              <span id="last-updated">아직 저장되지 않음</span>
+              <span aria-hidden="true">·</span>
+              <span id="word-count">0자</span>
+              <span aria-hidden="true">·</span>
+              <span id="version-label">새 글</span>
+            </div>
+          </div>
+
+          <div class="editor-mode-tabs" role="tablist" aria-label="편집 방식">
+            <button class="is-active" type="button" role="tab" data-mode="visual" aria-selected="true">
+              편집
+            </button>
+            <button type="button" role="tab" data-mode="markdown" aria-selected="false">
+              Markdown
+            </button>
+            <button type="button" role="tab" data-mode="preview" aria-selected="false">
+              미리보기
+            </button>
+          </div>
+
+          <div class="editor-frame">
+            <div class="editor-pane" id="visual-pane" role="tabpanel">
+              <div class="format-toolbar" id="format-toolbar" aria-label="본문 서식">
+                <div class="toolbar-group">
+                  <button type="button" data-command="undo" aria-label="실행 취소" title="실행 취소">↶</button>
+                  <button type="button" data-command="redo" aria-label="다시 실행" title="다시 실행">↷</button>
+                </div>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <div class="toolbar-group">
+                  <button type="button" data-command="heading2" aria-label="큰 제목" title="큰 제목">H2</button>
+                  <button type="button" data-command="heading3" aria-label="작은 제목" title="작은 제목">H3</button>
+                  <button type="button" data-command="bold" aria-label="굵게" title="굵게"><strong>B</strong></button>
+                  <button type="button" data-command="italic" aria-label="기울임" title="기울임"><em>I</em></button>
+                  <button type="button" data-command="strike" aria-label="취소선" title="취소선"><s>S</s></button>
+                </div>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <div class="toolbar-group">
+                  <button type="button" data-command="bulletList" aria-label="글머리 목록" title="글머리 목록">• 목록</button>
+                  <button type="button" data-command="orderedList" aria-label="번호 목록" title="번호 목록">1. 목록</button>
+                  <button type="button" data-command="blockquote" aria-label="인용" title="인용">“ ”</button>
+                  <button type="button" data-command="code" aria-label="인라인 코드" title="인라인 코드">&lt;/&gt;</button>
+                  <button type="button" data-command="codeBlock" aria-label="코드 블록" title="코드 블록">코드</button>
+                </div>
+                <span class="toolbar-divider" aria-hidden="true"></span>
+                <div class="toolbar-group">
+                  <button type="button" data-command="link" aria-label="링크" title="링크">링크</button>
+                  <button type="button" data-command="table" aria-label="표 삽입" title="표 삽입">표</button>
+                  <button type="button" data-command="horizontalRule" aria-label="구분선" title="구분선">―</button>
+                </div>
+              </div>
+              <div id="rich-editor"></div>
+            </div>
+
+            <div class="editor-pane markdown-pane" id="markdown-pane" role="tabpanel" hidden>
+              <div class="source-notice">
+                <strong>Markdown 원문</strong>
+                <span>표·코드 블록처럼 세밀한 문법을 직접 다듬을 때 사용하세요.</span>
+              </div>
+              <textarea id="markdown-source" aria-label="Markdown 원문 편집기" spellcheck="false"></textarea>
+            </div>
+
+            <div class="editor-pane preview-pane" id="preview-pane" role="tabpanel" hidden>
+              <div class="preview-browser-bar" aria-hidden="true">
+                <span></span><span></span><span></span>
+                <div id="preview-url">jhwan.dev/blog/</div>
+              </div>
+              <article class="article-preview" id="article-preview"></article>
+            </div>
+          </div>
+        </section>
+
+        <aside class="settings-panel" aria-label="게시 설정">
+          <div class="settings-heading">
+            <div>
+              <p class="eyebrow">Settings</p>
+              <h2>게시 설정</h2>
+            </div>
+            <button class="icon-button mobile-only" id="settings-close" type="button" aria-label="게시 설정 닫기">×</button>
+          </div>
+
+          <section class="settings-section">
+            <h3>공개 상태</h3>
+            <div class="status-options">
+              <label>
+                <input type="radio" name="status" value="draft" checked />
+                <span><strong>초안</strong><small>나만 볼 수 있습니다</small></span>
+              </label>
+              <label>
+                <input type="radio" name="status" value="published" />
+                <span><strong>공개</strong><small>저장 즉시 사이트에 표시</small></span>
+              </label>
+            </div>
+          </section>
+
+          <section class="settings-section field-stack">
+            <label for="post-slug">글 주소</label>
+            <div class="slug-field">
+              <span>/blog/</span>
+              <input id="post-slug" name="slug" type="text" maxlength="180" autocomplete="off" />
+            </div>
+            <small class="field-help">한글, 영문, 숫자와 하이픈을 사용할 수 있습니다.</small>
+
+            <label for="post-description">목록 설명</label>
+            <textarea id="post-description" name="description" rows="4" maxlength="500"></textarea>
+            <small class="field-counter"><span id="description-count">0</span>/500</small>
+
+            <label for="post-category">카테고리</label>
+            <select id="post-category" name="category">
+              <option>개발</option>
+              <option>프로젝트</option>
+              <option>홈랩</option>
+              <option>ML/AI</option>
+              <option>Android</option>
+              <option>일상</option>
+            </select>
+
+            <label for="published-at">공개 시각</label>
+            <input id="published-at" name="publishedAt" type="datetime-local" />
+          </section>
+
+          <section class="settings-section">
+            <h3>대표 이미지</h3>
+            <button class="upload-dropzone" id="upload-image" type="button" disabled>
+              <span class="upload-icon" aria-hidden="true">▧</span>
+              <strong>이미지 업로드</strong>
+              <small>운영 연결 구간에서 활성화됩니다</small>
+            </button>
+          </section>
+
+          <section class="settings-section danger-zone" id="danger-zone">
+            <h3>글 관리</h3>
+            <button class="button button-danger" id="delete-post" type="button">휴지통으로 이동</button>
+            <button class="button button-secondary" id="restore-post" type="button" hidden>글 복구</button>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <button class="settings-fab mobile-only" id="settings-toggle" type="button">게시 설정</button>
+
+    <dialog class="history-dialog" id="history-dialog">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">History</p>
+          <h2>수정 이력</h2>
+        </div>
+        <button class="icon-button" id="history-close" type="button" aria-label="수정 이력 닫기">×</button>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
