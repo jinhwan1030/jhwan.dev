@@ -26,6 +26,8 @@ fs.writeFileSync(
 title: Draft visibility validation fixture
 description: This temporary entry must never appear in production output.
 pubDate: 2000-01-01
+updatedDate: ''
+heroImage: ''
 category: 개발
 draft: true
 ---

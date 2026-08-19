@@ -56,7 +56,7 @@ const blogPages = collectFiles(blogDirectory, '.html').filter(
 for (const blogPage of blogPages) {
   const source = fs.readFileSync(blogPage, 'utf8');
   const slug = path.relative(blogDirectory, path.dirname(blogPage)).replace(/\\/g, '/');
-  const canonicalURL = `${siteOrigin}/blog/${slug}/`;
+  const canonicalURL = new URL(`/blog/${slug}/`, siteOrigin).href;
   const requiredMetadata = [
     '<meta property="og:type" content="article">',
     '<meta property="article:published_time"',
