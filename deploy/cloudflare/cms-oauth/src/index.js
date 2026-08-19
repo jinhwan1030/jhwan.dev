@@ -2,6 +2,8 @@ const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const STATE_COOKIE = '__Host-jhwan_cms_oauth_state';
 const STATE_MAX_AGE_SECONDS = 600;
+const MINIMUM_GITHUB_SCOPE = 'public_repo';
+const SVELTIA_GITHUB_SCOPE_HINT = 'repo,user';
 
 const BASE_HEADERS = {
   'Cache-Control': 'no-store',
@@ -79,10 +81,15 @@ function requireEnvironment(env) {
     throw new Error('OAUTH_CALLBACK_URL must end with the exact /callback path');
   }
 
+  const githubScope = env.GITHUB_SCOPE || MINIMUM_GITHUB_SCOPE;
+  if (githubScope !== MINIMUM_GITHUB_SCOPE) {
+    throw new Error(`GITHUB_SCOPE must be ${MINIMUM_GITHUB_SCOPE}`);
+  }
+
   return {
     callbackUrl,
     cmsOrigin,
-    githubScope: env.GITHUB_SCOPE || 'public_repo',
+    githubScope,
   };
 }
 
@@ -145,8 +152,12 @@ async function handleAuth(url, env) {
     return textResponse('Invalid CMS site', 400);
   }
 
-  const requestedScope = url.searchParams.get('scope') || githubScope;
-  if (requestedScope !== githubScope) {
+  const requestedScope = url.searchParams.get('scope');
+  if (
+    requestedScope
+    && requestedScope !== githubScope
+    && requestedScope !== SVELTIA_GITHUB_SCOPE_HINT
+  ) {
     return textResponse('Invalid OAuth scope', 400);
   }
 
@@ -241,10 +252,10 @@ export async function handleRequest(request, env, fetchImpl = fetch) {
       return textResponse('jhwan CMS OAuth proxy: ok');
     }
     if (url.pathname === '/auth') {
-      return handleAuth(url, env);
+      return await handleAuth(url, env);
     }
     if (url.pathname === '/callback') {
-      return handleCallback(request, url, env, fetchImpl);
+      return await handleCallback(request, url, env, fetchImpl);
     }
     return textResponse('Not found', 404);
   } catch (error) {

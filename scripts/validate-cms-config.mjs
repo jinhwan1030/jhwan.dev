@@ -56,6 +56,7 @@ export function parseCmsConfig(source) {
       : lines.findIndex((line, index) => index > blogStart && /^  - name:/.test(line));
   const effectiveBlogEnd = blogEnd === -1 ? lines.length : blogEnd;
   const authMethods = valueAtIndent(lines, 'auth_methods', 2, backendStart, backendEnd);
+  const authScope = valueAtIndent(lines, 'auth_scope', 2, backendStart, backendEnd);
   const fieldNames = lines
     .slice(blogStart, effectiveBlogEnd)
     .filter((line) => line.startsWith('        name:'))
@@ -69,6 +70,7 @@ export function parseCmsConfig(source) {
     backend: {
       name: valueAtIndent(lines, 'name', 2, backendStart, backendEnd),
       base_url: valueAtIndent(lines, 'base_url', 2, backendStart, backendEnd),
+      ...(authScope === undefined ? {} : { auth_scope: authScope }),
       auth_methods: authMethods
         ?.replace(/^\[/, '')
         .replace(/\]$/, '')
@@ -113,6 +115,9 @@ export function validateCmsConfig(config, adminHtml) {
   if (config.backend?.name !== 'github') fail('backend.name must be "github"');
   if (config.backend?.base_url !== 'https://auth.jhwan.dev') {
     fail('backend.base_url must use the jhwan.dev OAuth Worker');
+  }
+  if ('auth_scope' in config.backend) {
+    fail('backend.auth_scope is ignored by the reviewed Sveltia CMS version');
   }
   if (config.backend?.auth_methods?.length !== 1 || config.backend.auth_methods[0] !== 'oauth') {
     fail('backend.auth_methods must allow OAuth only');

@@ -71,6 +71,19 @@ describe('CMS OAuth Worker', () => {
     assert.match(result.headers.get('Set-Cookie'), /HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
   });
 
+  it('accepts the Sveltia scope hint but only requests the minimal GitHub scope', async () => {
+    const result = await handleRequest(
+      new Request(
+        'https://auth.jhwan.dev/auth?provider=github&site_id=jhwan.dev&scope=repo%2Cuser',
+      ),
+      ENV,
+    );
+
+    assert.equal(result.status, 302);
+    const location = new URL(result.headers.get('Location'));
+    assert.equal(location.searchParams.get('scope'), 'public_repo');
+  });
+
   it('rejects a broader OAuth scope', async () => {
     const result = await handleRequest(
       new Request('https://auth.jhwan.dev/auth?provider=github&site_id=jhwan.dev&scope=repo'),
@@ -79,6 +92,23 @@ describe('CMS OAuth Worker', () => {
 
     assert.equal(result.status, 400);
     assert.equal(await result.text(), 'Invalid OAuth scope');
+  });
+
+  it('rejects a broader configured GitHub scope', async () => {
+    const originalConsoleError = console.error;
+    console.error = () => {};
+    let result;
+    try {
+      result = await handleRequest(
+        new Request('https://auth.jhwan.dev/auth?provider=github&site_id=jhwan.dev'),
+        { ...ENV, GITHUB_SCOPE: 'repo,user' },
+      );
+    } finally {
+      console.error = originalConsoleError;
+    }
+
+    assert.equal(result.status, 500);
+    assert.equal(await result.text(), 'OAuth proxy configuration error');
   });
 
   it('rejects callback state mismatches before contacting GitHub', async () => {

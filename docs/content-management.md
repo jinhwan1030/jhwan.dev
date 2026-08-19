@@ -62,6 +62,11 @@ GitHub **Settings → Developer settings → OAuth Apps → New OAuth App**에�
 scope만 요청합니다. GitHub OAuth App의 scope는 특정 저장소 하나로 한정되지는 않으므로,
 관리자용 OAuth App으로만 사용하고 불필요해지면 GitHub에서 폐기합니다.
 
+고정해서 사용하는 Sveltia CMS 버전은 OAuth 팝업을 열 때 내부 기본값인 `repo,user`를
+인증 프록시에 전달하며 `backend.auth_scope` 설정을 사용하지 않습니다. Worker는 이 알려진
+요청값을 GitHub로 전달하지 않고 `public_repo`로 축소해 승인 화면을 엽니다. 다른 scope는
+거부하며, Worker 설정 자체도 `public_repo` 이외의 값을 허용하지 않습니다.
+
 ### 2. Worker 최초 배포
 
 ```bash

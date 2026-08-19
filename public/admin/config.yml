@@ -4,7 +4,6 @@ backend:
   branch: main
   base_url: https://auth.jhwan.dev
   auth_endpoint: auth
-  auth_scope: public_repo
   auth_methods: [oauth]
   site_domain: jhwan.dev
   commit_messages:

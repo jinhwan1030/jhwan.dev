@@ -44,3 +44,10 @@ test('rejects unsupported legacy settings', () => {
 
   assert.throws(() => validateCmsConfig(invalid, adminHtml), /local_backend is not supported/);
 });
+
+test('rejects an ignored backend auth scope', () => {
+  const invalid = cloneConfig();
+  invalid.backend.auth_scope = 'public_repo';
+
+  assert.throws(() => validateCmsConfig(invalid, adminHtml), /auth_scope is ignored/);
+});
