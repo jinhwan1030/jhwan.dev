@@ -9,7 +9,7 @@ import { SITE_TITLE } from '../consts';
 interface Props {
 	title: string;
 	description: string;
-	image?: ImageMetadata;
+	image?: ImageMetadata | string;
 	imageAlt?: string;
 	ogType?: 'website' | 'article';
 	publishedTime?: Date;
@@ -27,7 +27,7 @@ const {
 	publishedTime,
 	modifiedTime,
 } = Astro.props;
-const imageURL = new URL(image.src, Astro.site ?? Astro.url);
+const imageURL = new URL(typeof image === 'string' ? image : image.src, Astro.site ?? Astro.url);
 ---
 
 <!-- Global Metadata -->
@@ -36,7 +36,7 @@ const imageURL = new URL(image.src, Astro.site ?? Astro.url);
 <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg?v=2" />
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico?v=2" />
 <meta name="theme-color" content="#2563eb" />
-<link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="sitemap" href="/sitemap.xml" />
 <link
 	rel="alternate"
 	type="application/rss+xml"

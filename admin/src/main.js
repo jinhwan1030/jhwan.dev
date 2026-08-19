@@ -1,4 +1,5 @@
 import { createDemoAdminApi } from './demo-api.js';
+import { createHttpAdminApi } from './http-api.js';
 import {
   createMarkdownEditor,
   isCommandActive,
@@ -6,7 +7,8 @@ import {
   setMarkdown,
 } from './editor.js';
 
-const api = createDemoAdminApi();
+const demoMode = new URLSearchParams(window.location.search).get('demo') === '1';
+const api = demoMode ? createDemoAdminApi() : createHttpAdminApi();
 const elements = {
   body: document.body,
   sidebar: document.querySelector('#post-sidebar'),
@@ -50,6 +52,11 @@ const elements = {
   historyClose: document.querySelector('#history-close'),
   historyList: document.querySelector('#history-list'),
   toast: document.querySelector('#toast'),
+  authScreen: document.querySelector('#auth-screen'),
+  authMessage: document.querySelector('#auth-message'),
+  environmentBadge: document.querySelector('#environment-badge'),
+  adminAccount: document.querySelector('#admin-account'),
+  logout: document.querySelector('#logout'),
 };
 
 const state = {
@@ -136,6 +143,13 @@ function showToast(message, { error = false } = {}) {
   showToast.timer = window.setTimeout(() => {
     elements.toast.hidden = true;
   }, 3_200);
+}
+
+function showLogin(error) {
+  elements.authMessage.textContent = error?.code === 'admin_disabled'
+    ? '영구 저장소 설정이 끝난 뒤 관리자 기능이 활성화됩니다.'
+    : (error?.message || 'GitHub 계정으로 본인 확인 후 글을 관리할 수 있습니다.');
+  elements.authScreen.hidden = false;
 }
 
 function recoveryKey() {
@@ -333,6 +347,7 @@ async function loadPosts({ preserveSelection = true } = {}) {
       if (refreshed) populateDocument(refreshed);
     }
   } catch (error) {
+    if (error.status === 401 || error.code === 'admin_disabled') showLogin(error);
     showToast(error.message || '글 목록을 불러오지 못했습니다.', { error: true });
   }
 }
@@ -516,6 +531,11 @@ elements.deleteButton.addEventListener('click', deletePost);
 elements.restoreButton.addEventListener('click', restorePost);
 elements.historyOpen.addEventListener('click', openHistory);
 elements.historyClose.addEventListener('click', () => elements.historyDialog.close());
+elements.logout.addEventListener('click', async () => {
+  try { await api.logout(); } catch { /* the server may have already expired the session */ }
+  elements.adminAccount.textContent = '';
+  showLogin();
+});
 elements.sidebarToggle.addEventListener('click', () => elements.body.classList.toggle('sidebar-open'));
 elements.sidebarScrim.addEventListener('click', () => elements.body.classList.remove('sidebar-open'));
 elements.settingsToggle.addEventListener('click', () => elements.body.classList.add('settings-open'));
@@ -569,6 +589,20 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 async function initialize() {
+  if (demoMode) {
+    elements.environmentBadge.textContent = '데모 데이터';
+    elements.logout.hidden = true;
+  } else {
+    try {
+      await api.exchangeLoginTicketFromHash();
+      const session = await api.getSession();
+      elements.adminAccount.textContent = `@${session.githubLogin}`;
+      elements.authScreen.hidden = true;
+    } catch (error) {
+      showLogin(error);
+      return;
+    }
+  }
   await loadPosts({ preserveSelection: false });
   const firstActive = state.posts.find((post) => !post.deletedAt) ?? state.posts[0];
   if (firstActive) populateDocument(firstActive);

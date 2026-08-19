@@ -89,6 +89,22 @@ export function createPostRepository(
   const listAllStatement = database.prepare(
     'SELECT * FROM posts ORDER BY deleted_at IS NOT NULL, published_at DESC, slug',
   );
+  const listPublishedStatement = database.prepare(`
+    SELECT * FROM posts
+    WHERE status = 'published'
+      AND deleted_at IS NULL
+      AND published_at IS NOT NULL
+      AND published_at <= ?
+    ORDER BY published_at DESC, slug
+  `);
+  const findPublishedBySlugStatement = database.prepare(`
+    SELECT * FROM posts
+    WHERE slug = ?
+      AND status = 'published'
+      AND deleted_at IS NULL
+      AND published_at IS NOT NULL
+      AND published_at <= ?
+  `);
   const insertStatement = database.prepare(`
     INSERT INTO posts (
       id, slug, title, description, body_markdown, category, status, hero_image_path,
@@ -232,6 +248,14 @@ export function createPostRepository(
 
     list({ includeDeleted = false } = {}) {
       return (includeDeleted ? listAllStatement : listActiveStatement).all().map(mapPost);
+    },
+
+    listPublished(now = new Date().toISOString()) {
+      return listPublishedStatement.all(now).map(mapPost);
+    },
+
+    findPublishedBySlug(slug, now = new Date().toISOString()) {
+      return mapPost(findPublishedBySlugStatement.get(slug, now));
     },
 
     listRevisions(id) {

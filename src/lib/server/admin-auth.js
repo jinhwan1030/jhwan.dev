@@ -8,6 +8,7 @@ import {
 import { withImmediateTransaction } from './database.js';
 
 export const ADMIN_SESSION_COOKIE = '__Host-jhwan_admin_session';
+export const ADMIN_CSRF_COOKIE = '__Host-jhwan_admin_csrf';
 export const DEFAULT_SESSION_MAX_AGE_SECONDS = 8 * 60 * 60;
 const LOGIN_TICKET_ISSUER = 'jhwan-cms-oauth';
 const LOGIN_TICKET_AUDIENCE = 'jhwan-admin';
@@ -268,4 +269,12 @@ export function serializeAdminSessionCookie(sessionToken, maxAge = DEFAULT_SESSI
 
 export function clearAdminSessionCookie() {
   return `${ADMIN_SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
+}
+
+export function serializeAdminCsrfCookie(csrfToken, maxAge = DEFAULT_SESSION_MAX_AGE_SECONDS) {
+  return `${ADMIN_CSRF_COOKIE}=${csrfToken}; Path=/; Secure; SameSite=Strict; Max-Age=${maxAge}`;
+}
+
+export function clearAdminCsrfCookie() {
+  return `${ADMIN_CSRF_COOKIE}=; Path=/; Secure; SameSite=Strict; Max-Age=0`;
 }

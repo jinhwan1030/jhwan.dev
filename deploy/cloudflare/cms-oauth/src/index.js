@@ -1,6 +1,8 @@
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+const GITHUB_USER_URL = 'https://api.github.com/user';
 const STATE_COOKIE = '__Host-jhwan_cms_oauth_state';
+const FLOW_COOKIE = '__Host-jhwan_cms_oauth_flow';
 const STATE_MAX_AGE_SECONDS = 600;
 const MINIMUM_GITHUB_SCOPE = 'public_repo';
 const SVELTIA_GITHUB_SCOPE_HINT = 'repo,user';
@@ -65,6 +67,16 @@ function stateCookie(value, maxAge = STATE_MAX_AGE_SECONDS) {
   return `${STATE_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 }
 
+function flowCookie(value, maxAge = STATE_MAX_AGE_SECONDS) {
+  return `${FLOW_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+function appendFlowCookies(result, state, flow, maxAge = STATE_MAX_AGE_SECONDS) {
+  result.headers.append('Set-Cookie', stateCookie(state, maxAge));
+  result.headers.append('Set-Cookie', flowCookie(flow, maxAge));
+  return result;
+}
+
 function requireEnvironment(env) {
   const required = ['GITHUB_OAUTH_ID', 'GITHUB_OAUTH_SECRET', 'CMS_ORIGIN', 'OAUTH_CALLBACK_URL'];
   const missing = required.filter((key) => !env[key]);
@@ -91,6 +103,17 @@ function requireEnvironment(env) {
     cmsOrigin,
     githubScope,
   };
+}
+
+function requireAdminEnvironment(env) {
+  const { cmsOrigin } = requireEnvironment(env);
+  if (!/^\d+$/.test(env.ADMIN_GITHUB_USER_ID ?? '')) {
+    throw new Error('ADMIN_GITHUB_USER_ID must be a numeric GitHub user ID');
+  }
+  if (typeof env.ADMIN_LOGIN_TICKET_SECRET !== 'string' || env.ADMIN_LOGIN_TICKET_SECRET.length < 32) {
+    throw new Error('ADMIN_LOGIN_TICKET_SECRET must contain at least 32 characters');
+  }
+  return { adminOrigin: cmsOrigin };
 }
 
 function safeJson(value) {
@@ -132,14 +155,14 @@ function callbackPage(env, status, payload, httpStatus = 200) {
   </body>
 </html>`;
 
-  return response(html, {
+  const result = response(html, {
     status: httpStatus,
     headers: {
       'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`,
       'Content-Type': 'text/html; charset=utf-8',
-      'Set-Cookie': stateCookie('', 0),
     },
   });
+  return appendFlowCookies(result, '', '', 0);
 }
 
 async function handleAuth(url, env) {
@@ -171,13 +194,32 @@ async function handleAuth(url, env) {
     state,
   }).toString();
 
-  return response(null, {
+  const result = response(null, {
     status: 302,
     headers: {
       Location: authorizationUrl.href,
-      'Set-Cookie': stateCookie(state),
     },
   });
+  return appendFlowCookies(result, state, 'cms');
+}
+
+async function handleAdminAuth(env) {
+  const { callbackUrl, githubScope } = requireEnvironment(env);
+  requireAdminEnvironment(env);
+  const state = randomHex();
+  const authorizationUrl = new URL(GITHUB_AUTHORIZE_URL);
+  authorizationUrl.search = new URLSearchParams({
+    client_id: env.GITHUB_OAUTH_ID,
+    redirect_uri: callbackUrl.href,
+    response_type: 'code',
+    scope: githubScope,
+    state,
+  }).toString();
+  const result = response(null, {
+    status: 302,
+    headers: { Location: authorizationUrl.href },
+  });
+  return appendFlowCookies(result, state, 'admin');
 }
 
 async function exchangeCodeForToken(code, env, fetchImpl) {
@@ -210,6 +252,73 @@ async function exchangeCodeForToken(code, env, fetchImpl) {
   return tokenResult.access_token;
 }
 
+async function loadGithubIdentity(token, fetchImpl) {
+  const userResponse = await fetchImpl(GITHUB_USER_URL, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      Authorization: `Bearer ${token}`,
+      'User-Agent': 'jhwan-admin-oauth',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+  const user = await userResponse.json();
+  if (!userResponse.ok || !Number.isInteger(user.id) || typeof user.login !== 'string') {
+    throw new Error('GitHub identity verification failed');
+  }
+  return { id: String(user.id), login: user.login };
+}
+
+function base64UrlEncode(value) {
+  const bytes = typeof value === 'string' ? new TextEncoder().encode(value) : new Uint8Array(value);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+}
+
+async function signAdminLoginTicket(identity, secret, now = Date.now()) {
+  const issuedAt = Math.floor(now / 1_000);
+  const header = base64UrlEncode(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = base64UrlEncode(JSON.stringify({
+    iss: 'jhwan-cms-oauth',
+    aud: 'jhwan-admin',
+    purpose: 'admin-login',
+    jti: randomHex(16),
+    sub: identity.id,
+    login: identity.login,
+    iat: issuedAt,
+    exp: issuedAt + 120,
+  }));
+  const unsigned = `${header}.${payload}`;
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(unsigned));
+  return `${unsigned}.${base64UrlEncode(signature)}`;
+}
+
+async function adminCallback(token, env, fetchImpl) {
+  const { adminOrigin } = requireAdminEnvironment(env);
+  const identity = await loadGithubIdentity(token, fetchImpl);
+  if (identity.id !== env.ADMIN_GITHUB_USER_ID) {
+    return appendFlowCookies(textResponse('GitHub account is not an administrator', 403), '', '', 0);
+  }
+  const ticket = await signAdminLoginTicket(identity, env.ADMIN_LOGIN_TICKET_SECRET);
+  const location = new URL('/admin/', adminOrigin);
+  location.hash = new URLSearchParams({ ticket }).toString();
+  const result = response(null, {
+    status: 303,
+    headers: {
+      Location: location.href,
+      'Referrer-Policy': 'no-referrer',
+    },
+  });
+  return appendFlowCookies(result, '', '', 0);
+}
+
 async function handleCallback(request, url, env, fetchImpl) {
   requireEnvironment(env);
   const returnedState = url.searchParams.get('state');
@@ -232,6 +341,8 @@ async function handleCallback(request, url, env, fetchImpl) {
 
   try {
     const token = await exchangeCodeForToken(code, env, fetchImpl);
+    const flow = parseCookies(request.headers.get('Cookie')).get(FLOW_COOKIE) ?? 'cms';
+    if (flow === 'admin') return await adminCallback(token, env, fetchImpl);
     return callbackPage(env, 'success', { token });
   } catch (error) {
     console.error('GitHub OAuth token exchange failed');
@@ -253,6 +364,9 @@ export async function handleRequest(request, env, fetchImpl = fetch) {
     }
     if (url.pathname === '/auth') {
       return await handleAuth(url, env);
+    }
+    if (url.pathname === '/admin/auth') {
+      return await handleAdminAuth(env);
     }
     if (url.pathname === '/callback') {
       return await handleCallback(request, url, env, fetchImpl);

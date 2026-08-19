@@ -40,6 +40,9 @@ jobs:
       - name: 콘텐츠 DB 기반 검사
         run: npm run test:db
 
+      - name: 동적 콘텐츠와 관리자 HTTP API 검사
+        run: npm run test:runtime
+
       - name: 새 관리자 UI 회귀 테스트
         run: npm run test:admin-ui
 
@@ -51,6 +54,9 @@ jobs:
 
       - name: 홈페이지 빌드 및 초안 비공개 검사
         run: node scripts/validate-blog-output.mjs
+
+      - name: 관리자 HTTP 런타임 검사
+        run: node scripts/validate-admin-runtime.mjs
 
       - name: 내부 링크와 SEO 산출물 검사
         run: node scripts/validate-site-output.mjs

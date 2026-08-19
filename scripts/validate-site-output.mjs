@@ -1,78 +1,64 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const outputDirectory = path.resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
+import { loadMarkdownPosts } from './lib/markdown-posts.mjs';
+import { startRuntimeServer } from './lib/runtime-server.mjs';
+
 const siteOrigin = 'https://jhwan.dev';
+const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'jhwan-runtime-site-'));
+const server = await startRuntimeServer({ databasePath: path.join(temporaryDirectory, 'content.db') });
+const publicPosts = loadMarkdownPosts(path.resolve('src/content/blog')).filter(
+  (post) => post.status === 'published' && Date.parse(post.publishedAt) <= Date.now(),
+);
 
-function collectFiles(directory, extension) {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return collectFiles(entryPath, extension);
-    return entry.name.endsWith(extension) ? [entryPath] : [];
-  });
-}
+try {
+  const pages = ['/', '/about/', '/blog/', ...publicPosts.map((post) => `/blog/${post.slug}/`)];
+  const errors = [];
+  const checkedReferences = new Set();
 
-function resolveOutputPath(urlPath) {
-  const pathname = decodeURIComponent(urlPath.split(/[?#]/, 1)[0]);
-  const relativePath = pathname.replace(/^\/+/, '');
-  if (!relativePath) return path.join(outputDirectory, 'index.html');
+  for (const pathname of pages) {
+    const response = await fetch(`${server.origin}${pathname}`);
+    if (!response.ok) {
+      errors.push(`${pathname}: HTTP ${response.status}`);
+      continue;
+    }
+    const source = await response.text();
+    const canonical = new URL(pathname, siteOrigin).href;
+    if (!source.includes(`<link rel="canonical" href="${canonical}">`)) {
+      errors.push(`${pathname}: missing canonical URL`);
+    }
+    if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
+      for (const metadata of [
+        '<meta property="og:type" content="article">',
+        '<meta property="article:published_time"',
+        `<meta property="og:url" content="${canonical}">`,
+      ]) {
+        if (!source.includes(metadata)) errors.push(`${pathname}: missing metadata ${metadata}`);
+      }
+    }
 
-  const directPath = path.resolve(outputDirectory, relativePath);
-  if (!directPath.startsWith(`${outputDirectory}${path.sep}`)) return null;
-  const indexPath = path.join(directPath, 'index.html');
-  if (fs.existsSync(directPath) && fs.statSync(directPath).isFile()) return directPath;
-  if (fs.existsSync(indexPath)) return indexPath;
-  return null;
-}
-
-const htmlFiles = collectFiles(outputDirectory, '.html');
-const errors = [];
-let internalReferenceCount = 0;
-
-for (const htmlFile of htmlFiles) {
-  const source = fs.readFileSync(htmlFile, 'utf8');
-  const page = `/${path.relative(outputDirectory, htmlFile).replace(/\\/g, '/')}`;
-  const references = source.matchAll(/(?:href|src)=["']([^"']+)["']/g);
-
-  for (const match of references) {
-    const reference = match[1];
-    if (!reference.startsWith('/') || reference.startsWith('//')) continue;
-    internalReferenceCount += 1;
-
-    try {
-      if (!resolveOutputPath(reference)) errors.push(`${page}: missing ${reference}`);
-    } catch {
-      errors.push(`${page}: invalid URL encoding in ${reference}`);
+    for (const match of source.matchAll(/(?:href|src)=["']([^"']+)["']/g)) {
+      const reference = match[1];
+      if (!reference.startsWith('/') || reference.startsWith('//')) continue;
+      const referencePath = reference.split(/[?#]/, 1)[0];
+      if (checkedReferences.has(referencePath)) continue;
+      checkedReferences.add(referencePath);
+      const linked = await fetch(`${server.origin}${referencePath}`);
+      if (!linked.ok) errors.push(`${pathname}: broken internal reference ${referencePath} (${linked.status})`);
     }
   }
-}
 
-const blogDirectory = path.join(outputDirectory, 'blog');
-const blogPages = collectFiles(blogDirectory, '.html').filter(
-  (file) => file !== path.join(blogDirectory, 'index.html'),
-);
-
-for (const blogPage of blogPages) {
-  const source = fs.readFileSync(blogPage, 'utf8');
-  const slug = path.relative(blogDirectory, path.dirname(blogPage)).replace(/\\/g, '/');
-  const canonicalURL = new URL(`/blog/${slug}/`, siteOrigin).href;
-  const requiredMetadata = [
-    '<meta property="og:type" content="article">',
-    '<meta property="article:published_time"',
-    `<link rel="canonical" href="${canonicalURL}">`,
-    `<meta property="og:url" content="${canonicalURL}">`,
-  ];
-
-  for (const metadata of requiredMetadata) {
-    if (!source.includes(metadata)) errors.push(`/blog/${slug}/: missing metadata ${metadata}`);
+  for (const endpoint of ['/rss.xml', '/sitemap.xml']) {
+    const response = await fetch(`${server.origin}${endpoint}`);
+    if (!response.ok) errors.push(`${endpoint}: HTTP ${response.status}`);
   }
-}
 
-if (errors.length > 0) {
-  throw new Error(`Site output validation failed:\n${errors.join('\n')}`);
+  if (errors.length > 0) throw new Error(`Runtime site validation failed:\n${errors.join('\n')}`);
+  console.log(
+    `Runtime site validation passed (${pages.length} HTML responses, ${checkedReferences.size} internal references)`,
+  );
+} finally {
+  await server.stop();
+  fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 }
-
-console.log(
-  `Site output validation passed (${htmlFiles.length} HTML files, ${internalReferenceCount} internal references, ${blogPages.length} article pages)`,
-);

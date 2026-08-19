@@ -2,8 +2,11 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { handleRequest } from '../src/index.js';
+import { verifyAdminLoginTicket } from '../../../../src/lib/server/admin-auth.js';
 
 const ENV = {
+  ADMIN_GITHUB_USER_ID: '12345678',
+  ADMIN_LOGIN_TICKET_SECRET: 'test-admin-login-ticket-secret-32-bytes-minimum',
   CMS_ORIGIN: 'https://jhwan.dev',
   GITHUB_OAUTH_ID: 'test-client-id',
   GITHUB_OAUTH_SECRET: 'test-client-secret',
@@ -16,6 +19,10 @@ function extractState(response) {
   const match = cookie?.match(/__Host-jhwan_cms_oauth_state=([a-f0-9]{64})/);
   assert.ok(match, 'OAuth state cookie was not set');
   return match[1];
+}
+
+function STATE_COOKIE_FOR_TEST(state) {
+  return `__Host-jhwan_cms_oauth_state=${state}`;
 }
 
 describe('CMS OAuth Worker', () => {
@@ -69,6 +76,19 @@ describe('CMS OAuth Worker', () => {
     assert.equal(location.searchParams.get('scope'), 'public_repo');
     assert.equal(location.searchParams.get('state'), state);
     assert.match(result.headers.get('Set-Cookie'), /HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
+  });
+
+  it('starts the administrator flow with an HttpOnly flow marker', async () => {
+    const result = await handleRequest(
+      new Request('https://auth.jhwan.dev/admin/auth'),
+      ENV,
+    );
+
+    assert.equal(result.status, 302);
+    const location = new URL(result.headers.get('Location'));
+    assert.equal(location.origin, 'https://github.com');
+    assert.equal(location.searchParams.get('scope'), 'public_repo');
+    assert.match(result.headers.get('Set-Cookie'), /__Host-jhwan_cms_oauth_flow=admin/);
   });
 
   it('accepts the Sveltia scope hint but only requests the minimal GitHub scope', async () => {
@@ -160,6 +180,70 @@ describe('CMS OAuth Worker', () => {
     assert.match(html, /https:\/\/jhwan\.dev/);
     assert.match(result.headers.get('Content-Security-Policy'), /script-src 'nonce-/);
     assert.match(result.headers.get('Set-Cookie'), /Max-Age=0/);
+  });
+
+  it('verifies the GitHub identity and redirects with a short-lived administrator ticket', async () => {
+    const authResult = await handleRequest(
+      new Request('https://auth.jhwan.dev/admin/auth'),
+      ENV,
+    );
+    const state = extractState(authResult);
+    const requestedUrls = [];
+    const result = await handleRequest(
+      new Request(`https://auth.jhwan.dev/callback?code=admin-code&state=${state}`, {
+        headers: {
+          Cookie: `${STATE_COOKIE_FOR_TEST(state)}; __Host-jhwan_cms_oauth_flow=admin`,
+        },
+      }),
+      ENV,
+      async (url) => {
+        requestedUrls.push(String(url));
+        if (url === 'https://github.com/login/oauth/access_token') {
+          return Response.json({ access_token: 'server-only-github-token' });
+        }
+        if (url === 'https://api.github.com/user') {
+          return Response.json({ id: 12345678, login: 'jinhwan1030' });
+        }
+        throw new Error(`Unexpected URL: ${url}`);
+      },
+    );
+
+    assert.equal(result.status, 303);
+    assert.deepEqual(requestedUrls, [
+      'https://github.com/login/oauth/access_token',
+      'https://api.github.com/user',
+    ]);
+    const location = new URL(result.headers.get('Location'));
+    assert.equal(location.origin, 'https://jhwan.dev');
+    assert.equal(location.pathname, '/admin/');
+    const ticket = new URLSearchParams(location.hash.slice(1)).get('ticket');
+    const identity = verifyAdminLoginTicket(ticket, ENV.ADMIN_LOGIN_TICKET_SECRET);
+    assert.equal(identity.githubUserId, ENV.ADMIN_GITHUB_USER_ID);
+    assert.equal(identity.githubLogin, 'jinhwan1030');
+    assert.ok(identity.expiresAt - identity.issuedAt <= 120);
+    assert.doesNotMatch(result.headers.get('Location'), /server-only-github-token/);
+  });
+
+  it('does not issue an administrator ticket to another GitHub account', async () => {
+    const authResult = await handleRequest(
+      new Request('https://auth.jhwan.dev/admin/auth'),
+      ENV,
+    );
+    const state = extractState(authResult);
+    const result = await handleRequest(
+      new Request(`https://auth.jhwan.dev/callback?code=admin-code&state=${state}`, {
+        headers: {
+          Cookie: `${STATE_COOKIE_FOR_TEST(state)}; __Host-jhwan_cms_oauth_flow=admin`,
+        },
+      }),
+      ENV,
+      async (url) => url === 'https://github.com/login/oauth/access_token'
+        ? Response.json({ access_token: 'server-only-github-token' })
+        : Response.json({ id: 99999999, login: 'not-the-admin' }),
+    );
+
+    assert.equal(result.status, 403);
+    assert.equal(await result.text(), 'GitHub account is not an administrator');
   });
 
   it('does not expose secrets when GitHub rejects the token request', async () => {

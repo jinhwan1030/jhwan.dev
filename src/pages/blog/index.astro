@@ -3,7 +3,9 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
-import { getVisibleBlogPosts } from '../../utils/blog';
+import { getContentRuntime } from '../../lib/server/content-runtime.js';
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 
 const CATEGORY_EMOJI: Record<string, string> = {
   '홈랩': '🖥️',
@@ -23,7 +25,15 @@ const CATEGORY_COLOR: Record<string, string> = {
   '일상': 'linear-gradient(135deg, #64748b, #0f766e)',
 };
 
-const posts = await getVisibleBlogPosts();
+interface PublicPost {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  publishedAt: string;
+}
+
+const posts = getContentRuntime().repository.listPublished() as PublicPost[];
 ---
 
 <!doctype html>
@@ -188,15 +198,15 @@ const posts = await getVisibleBlogPosts();
       <h1 class="page-title">글 목록</h1>
       <div class="cards">
         {posts.map((post) => (
-          <a href={`/blog/${post.id}/`} class="card">
-            <div class="card-thumb" style={`background: ${CATEGORY_COLOR[post.data.category] || 'linear-gradient(135deg, #334155, #2563eb)'}`}>
-              {CATEGORY_EMOJI[post.data.category] || '💻'}
+          <a href={`/blog/${post.slug}/`} class="card">
+            <div class="card-thumb" style={`background: ${CATEGORY_COLOR[post.category] || 'linear-gradient(135deg, #334155, #2563eb)'}`}>
+              {CATEGORY_EMOJI[post.category] || '💻'}
             </div>
             <div class="card-body">
-              <p class="card-category">{post.data.category}</p>
-              <h2 class="card-title">{post.data.title}</h2>
-              <p class="card-desc">{post.data.description}</p>
-              <p class="card-date">{post.data.pubDate.toLocaleDateString('ko-KR')}</p>
+              <p class="card-category">{post.category}</p>
+              <h2 class="card-title">{post.title}</h2>
+              <p class="card-desc">{post.description}</p>
+              <p class="card-date">{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</p>
             </div>
           </a>
         ))}

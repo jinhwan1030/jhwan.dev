@@ -1,2 +1,4 @@
 GITHUB_OAUTH_ID="GitHub OAuth App의 Client ID"
 GITHUB_OAUTH_SECRET="GitHub OAuth App의 Client Secret"
+ADMIN_GITHUB_USER_ID="숫자로 된 GitHub 사용자 ID"
+ADMIN_LOGIN_TICKET_SECRET="홈페이지 서버와 공유할 32바이트 이상의 임의 문자열"

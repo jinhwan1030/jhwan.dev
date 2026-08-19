@@ -18,7 +18,8 @@ test('admin shell keeps the post list visible before the editor and avoids remot
   assert.match(html, /id="markdown-source"/);
   assert.match(html, /id="article-preview"/);
   assert.match(html, /id="save-post"/);
-  assert.doesNotMatch(html, /(?:src|href)="https?:\/\//);
+  assert.doesNotMatch(html, /<(?:script|link)\b[^>]+(?:src|href)="https?:\/\//);
+  assert.match(html, /href="https:\/\/auth\.jhwan\.dev\/admin\/auth"/);
 });
 
 test('demo API supports create, update, soft delete, restore, and revision history', async () => {

@@ -15,6 +15,11 @@
     "GITHUB_SCOPE": "public_repo"
   },
   "secrets": {
-    "required": ["GITHUB_OAUTH_ID", "GITHUB_OAUTH_SECRET"]
+    "required": [
+      "GITHUB_OAUTH_ID",
+      "GITHUB_OAUTH_SECRET",
+      "ADMIN_GITHUB_USER_ID",
+      "ADMIN_LOGIN_TICKET_SECRET"
+    ]
   }
 }

@@ -1,21 +1,56 @@
 ---
-import { type CollectionEntry, render } from 'astro:content';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
 import BlogPost from '../../layouts/BlogPost.astro';
-import { getVisibleBlogPosts } from '../../utils/blog';
+import { getContentRuntime } from '../../lib/server/content-runtime.js';
+import { renderMarkdown } from '../../lib/server/render-markdown.js';
 
-export async function getStaticPaths() {
-	const posts = await getVisibleBlogPosts();
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+const repository = getContentRuntime().repository;
+const slug = Astro.params.slug?.normalize('NFC') ?? '';
+const post = repository.findPublishedBySlug(slug);
+
+if (!post) {
+  const historical = repository.resolveHistoricalSlug(slug);
+  if (historical && repository.findPublishedBySlug(historical.slug)) {
+    return Astro.redirect(`/blog/${historical.slug}/`, 301);
+  }
+  Astro.response.status = 404;
 }
-type Props = CollectionEntry<'blog'>;
 
-const post = Astro.props;
-const { Content } = await render(post);
+const bodyHtml = post ? renderMarkdown(post.bodyMarkdown) : '';
 ---
 
-<BlogPost {...post.data}>
-	<Content />
-</BlogPost>
+{
+  post ? (
+    <BlogPost
+      title={post.title}
+      description={post.description}
+      pubDate={new Date(post.publishedAt)}
+      updatedDate={post.contentUpdatedAt ? new Date(post.contentUpdatedAt) : undefined}
+      heroImage={post.heroImagePath}
+    >
+      <Fragment set:html={bodyHtml} />
+    </BlogPost>
+  ) : (
+    <html lang="ko">
+      <head><title>글을 찾을 수 없습니다 | jhwan.dev</title></head>
+      <body>
+        <Header />
+        <main class="not-found">
+          <p>404</p>
+          <h1>글을 찾을 수 없습니다.</h1>
+          <a href="/blog/">글 목록으로 돌아가기</a>
+        </main>
+        <Footer />
+      </body>
+    </html>
+  )
+}
+
+<style>
+  .not-found { min-height: 65vh; display: grid; place-content: center; text-align: center; gap: 1rem; }
+  .not-found p { color: var(--color-accent); font-weight: 800; }
+  .not-found h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); }
+  .not-found a { color: var(--color-accent); }
+</style>
