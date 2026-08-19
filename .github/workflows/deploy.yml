@@ -49,8 +49,8 @@ jobs:
       - name: 새 관리자 UI 독립 빌드
         run: npm run admin:build
 
-      - name: 기존 Markdown 가져오기 사전 검사
-        run: npm run db:import
+      - name: 기존 콘텐츠와 미디어 이전 사전 검사
+        run: npm run db:migrate-legacy
 
       - name: 홈페이지 빌드 및 초안 비공개 검사
         run: node scripts/validate-blog-output.mjs

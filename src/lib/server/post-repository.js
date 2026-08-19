@@ -107,15 +107,15 @@ export function createPostRepository(
   `);
   const insertStatement = database.prepare(`
     INSERT INTO posts (
-      id, slug, title, description, body_markdown, category, status, hero_image_path,
+      id, slug, title, description, body_markdown, category, status, hero_image_path, hero_media_id,
       published_at, content_updated_at, created_at, updated_at, deleted_at, version,
       source_path, source_checksum
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const updateStatement = database.prepare(`
     UPDATE posts SET
       slug = ?, title = ?, description = ?, body_markdown = ?, category = ?, status = ?,
-      hero_image_path = ?, published_at = ?, content_updated_at = ?, updated_at = ?,
+      hero_image_path = ?, hero_media_id = ?, published_at = ?, content_updated_at = ?, updated_at = ?,
       deleted_at = ?, version = ?, source_path = ?, source_checksum = ?
     WHERE id = ?
   `);
@@ -147,6 +147,7 @@ export function createPostRepository(
       post.category,
       post.status,
       post.heroImagePath,
+      post.heroMediaId ?? null,
       post.publishedAt,
       post.contentUpdatedAt,
       post.createdAt,
@@ -167,6 +168,7 @@ export function createPostRepository(
       post.category,
       post.status,
       post.heroImagePath,
+      post.heroMediaId ?? null,
       post.publishedAt,
       post.contentUpdatedAt,
       post.updatedAt,
@@ -364,14 +366,20 @@ export function createPostRepository(
       });
     },
 
-    importPosts(posts) {
-      return withImmediateTransaction(database, () => {
+    importPosts(posts, { withinTransaction = false } = {}) {
+      const importAll = () => {
         const results = posts.map(upsertImportedPost);
         return results.reduce(
           (summary, result) => ({ ...summary, [result.action]: summary[result.action] + 1 }),
           { created: 0, updated: 0, unchanged: 0 },
         );
-      });
+      };
+
+      if (!withinTransaction) return withImmediateTransaction(database, importAll);
+      if (!database.isTransaction) {
+        throw new Error('withinTransaction requires an active database transaction');
+      }
+      return importAll();
     },
   };
 }

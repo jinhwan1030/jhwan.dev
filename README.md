@@ -36,6 +36,7 @@ public/
 └── admin/            # 전환 전 Sveltia CMS 운영 화면
 admin/                # 새 Content Studio 독립 프런트엔드
 database/             # SQLite 스키마 마이그레이션
+scripts/              # 콘텐츠·미디어 이전 및 운영 검증 도구
 ```
 
 ## Dev
@@ -53,6 +54,11 @@ npm run preview   # 빌드 미리보기
 현재 Markdown으로 한 번 초기화한 뒤 목록·상세·RSS·사이트맵을 DB에서 즉시 렌더링합니다. 영구
 볼륨과 백업을 적용한 뒤 새 Content Studio를 운영 `/admin/`에 연결합니다. 기존 게시 흐름은
 [`docs/content-management.md`](./docs/content-management.md)에 정리되어 있습니다.
+
+기존 Markdown과 `src/assets/blog` 이미지는 `npm run db:migrate-legacy`로 쓰기 없는 사전 검사를
+할 수 있습니다. 실제 이전은 DB와 업로드 대상 경로를 모두 명시해야 하며, Raspberry Pi 영구
+볼륨과 백업을 준비하는 배포 단계에서만 실행합니다. 세부 절차는
+[`docs/content-database.md`](./docs/content-database.md)에 정리되어 있습니다.
 
 ## Deployment
 

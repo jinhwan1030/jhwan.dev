@@ -85,10 +85,15 @@ export function parseMarkdownPost(filePath, { contentDirectory, sourcePrefix = '
 }
 
 export function loadMarkdownPosts(contentDirectory, options = {}) {
+  return loadMarkdownPostSources(contentDirectory, options).map(({ post }) => post);
+}
+
+export function loadMarkdownPostSources(contentDirectory, options = {}) {
   const resolvedDirectory = path.resolve(contentDirectory);
-  return collectMarkdownFiles(resolvedDirectory).map((filePath) =>
-    parseMarkdownPost(filePath, { contentDirectory: resolvedDirectory, ...options }),
-  );
+  return collectMarkdownFiles(resolvedDirectory).map((filePath) => ({
+    filePath,
+    post: parseMarkdownPost(filePath, { contentDirectory: resolvedDirectory, ...options }),
+  }));
 }
 
 export function summarizeMarkdownPosts(posts) {

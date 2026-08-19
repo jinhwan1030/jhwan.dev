@@ -11,6 +11,7 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=80 \
     JHWAN_DATABASE_PATH=/app/.data/jhwan.db \
+    JHWAN_MEDIA_PATH=/app/.data/uploads \
     JHWAN_CONTENT_SEED_PATH=/app/src/content/blog
 COPY package*.json ./
 RUN npm ci --omit=dev

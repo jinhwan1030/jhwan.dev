@@ -8,7 +8,9 @@
 - 런타임: Node.js 24.15 이상에 포함된 `node:sqlite`
 - 마이그레이션: `database/migrations/*.sql`
 - 기본 개발 경로: `.data/jhwan.db` (Git 제외)
+- 기본 개발 미디어 경로: `.data/uploads` (Git 제외)
 - 컨테이너 임시 경로: `/app/.data/jhwan.db`
+- 컨테이너 임시 미디어 경로: `/app/.data/uploads`
 - 운영 영구 경로: 이후 Raspberry Pi의 Docker 영구 볼륨으로 별도 지정
 - 보호 장치: 외래 키, WAL, 무결성 검사, 마이그레이션 체크섬, 쓰기 트랜잭션
 
@@ -17,10 +19,11 @@ DB BLOB으로 넣지 않고 이후 영구 업로드 볼륨에 저장합니다.
 
 ## 검사
 
-Markdown이 DB 레코드로 변환 가능한지 검사하거나 동적 런타임 회귀 테스트를 실행합니다.
+기존 Markdown과 미디어가 DB·업로드 구조로 변환 가능한지 검사하거나 동적 런타임 회귀 테스트를
+실행합니다. 첫 명령은 메모리 DB만 사용하며 저장소 파일을 변경하지 않습니다.
 
 ```bash
-npm run db:import
+npm run db:migrate-legacy
 npm run test:runtime
 ```
 
@@ -30,7 +33,44 @@ SQLite 기반 회귀 테스트는 임시 디렉터리와 메모리 DB만 사용�
 npm run test:db
 ```
 
-## 명시적 로컬 적용
+## 기존 콘텐츠와 미디어 이전
+
+현재 기준 이전 대상은 Markdown 게시글 10개(공개 7개, 초안 3개)이며 `src/assets/blog`에 실제
+업로드 이미지는 없습니다. 이미지가 0개인 상태도 정상적인 이전 결과입니다. 이후 기존 CMS에서
+이미지가 추가되더라도 같은 명령이 파일을 검사하고 함께 이전합니다.
+
+```bash
+npm run db:migrate-legacy
+```
+
+이전 도구의 보호 장치는 다음과 같습니다.
+
+- `--apply`가 없으면 메모리 DB에서만 전체 변환과 무결성 검사를 수행
+- 실제 적용 시 DB 경로와 업로드 경로를 모두 명시하도록 강제
+- 게시글과 미디어 메타데이터를 한 SQLite 트랜잭션으로 반영
+- 같은 이미지 내용을 SHA-256 기반 파일명으로 한 번만 저장
+- 본문과 대표 이미지의 기존 상대 경로를 `/uploads/<hash>.<ext>`로 변환
+- 25 MiB 초과 파일, 지원하지 않는 이미지, 심볼릭 링크와 관리 폴더 밖 경로를 거부
+- slug가 관리자 작성 글이나 다른 원본과 충돌하면 전체 DB 변경을 롤백
+- 실패 시 이번 실행에서 새로 복사한 미디어 파일만 제거
+- 재실행 시 동일 게시글과 미디어를 변경하지 않는 멱등성 보장
+
+실제 적용 명령은 다음과 같습니다. 이 명령은 7단계에서 Raspberry Pi 영구 볼륨과 자동 백업을
+준비한 뒤 실행하며, 현재 임시 컨테이너 경로에는 실행하지 않습니다.
+
+```bash
+npm run db:migrate-legacy -- \
+  --apply \
+  --database /data/jhwan.db \
+  --uploads /data/uploads
+```
+
+적용 결과의 `verification.integrity`가 `ok`, `foreignKeyViolations`가 `0`인지 확인해야 합니다.
+미디어 결과의 `total`은 원본 파일 수, `unique`는 내용이 중복되지 않은 이미지 수입니다.
+`copiedMedia`는 이번 실행에서 새로 복사한 고유 파일 수이며, 같은 입력을 다시 실행하면 게시글과
+미디어가 `unchanged`로 집계됩니다.
+
+## 저수준 DB 명령
 
 마이그레이션과 가져오기는 실수로 운영 데이터를 변경하지 않도록 대상 경로를 반드시 요구합니다.
 
@@ -41,7 +81,8 @@ npm run db:import -- --apply --database .data/jhwan.db
 
 같은 Markdown을 다시 가져오면 체크섬이 같은 글은 건너뜁니다. 내용이 바뀐 글만 새 버전으로
 갱신하고 `post_revisions`에 스냅샷을 남깁니다. 같은 slug가 다른 원본 경로에 이미 연결되어 있으면
-전체 가져오기를 롤백합니다.
+전체 가져오기를 롤백합니다. 이 저수준 명령은 미디어를 복사하거나 본문 이미지 경로를 변환하지
+않으므로 운영 전환에는 위의 `db:migrate-legacy` 명령을 사용합니다.
 
 ## 관리자 API 기반
 
@@ -110,6 +151,7 @@ DB에 글이 하나라도 있으면 이후 시작 시 Markdown을 다시 가져�
 ```text
 JHWAN_ADMIN_ENABLED=true
 JHWAN_DATABASE_PATH=/data/jhwan.db
+JHWAN_MEDIA_PATH=/data/uploads
 ADMIN_GITHUB_USER_ID=<숫자 GitHub 사용자 ID>
 ADMIN_LOGIN_TICKET_SECRET=<양쪽에 동일한 32바이트 이상 임의 값>
 ```

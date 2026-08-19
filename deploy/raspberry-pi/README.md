@@ -8,6 +8,10 @@
 초기화됩니다. 데이터 손실을 막기 위해 관리자 API는 기본 비활성 상태입니다. 영구 볼륨과 자동
 백업을 추가한 뒤에만 `JHWAN_ADMIN_ENABLED=true`를 설정합니다.
 
+기존 콘텐츠·미디어 이전 도구는 준비되어 있지만 현재 임시 `/app/.data`에는 적용하지 않습니다.
+다음 배포 구간에서 `/data/jhwan.db`와 `/data/uploads` 영구 경로를 연결하고 백업·복구 검증을 마친
+뒤 `npm run db:migrate-legacy -- --apply ...`를 한 번 실행합니다.
+
 운영 위치:
 
 ```text
