@@ -2,6 +2,7 @@
 title: '라즈베리파이로 DDNS + SSL + 자동배포까지 구축하기'
 description: "도메인 하나 사고 라즈베리파이에 웹서버 올리기까지. DDNS, Nginx Proxy Manager, Let's Encrypt, GitHub Actions 전부 연결한 홈랩 구축기"
 pubDate: '2026-05-17'
+updatedDate: '2026-08-19'
 category: '홈랩'
 draft: false
 ---
@@ -21,7 +22,7 @@ iptime 공유기 포트포워딩 (80, 443)
     ↓
 Nginx Proxy Manager (리버스 프록시 + SSL)
     ↓
-Docker 컨테이너 (Astro 포트폴리오)
+Docker Compose 스택 (jhwan.dev, BabyWeather)
 ```
 
 ## 준비물
@@ -45,10 +46,13 @@ Docker 컨테이너 (Astro 포트폴리오)
 # DDNS 스크립트 실행
 bash {절대경로}/cf-ddns.sh
 
-# cron 등록 (매분 실행)
+# DDNS 갱신용 cron 등록 (매분 실행)
 sudo crontab -e
 # 추가: * * * * * {절대경로}/cf-ddns.sh
 ```
+
+이 cron은 유동 IP에 맞춰 DNS 레코드만 갱신한다. 아래에서 설명하는 컨테이너 배포는
+별도의 systemd timer가 담당한다.
 
 ## 2단계: 포트포워딩
 
@@ -87,8 +91,8 @@ services:
 docker compose up -d
 ```
 
-NPM 관리자 페이지는 `라즈베리파이IP:81`로 접속한다.
-기본 계정: `admin@example.com` / `changeme`
+NPM 관리자 페이지는 `라즈베리파이IP:81`로 접속한다. 최초 로그인 정보는 설치한 NPM
+버전의 공식 안내에서 확인하고, 로그인 직후 관리자 이메일과 비밀번호를 변경한다.
 
 ## 4단계: SSL 인증서 발급
 
@@ -112,19 +116,26 @@ SSL 탭:
 
 ## 5단계: Docker로 웹서비스 배포
 
-Astro 정적 사이트를 Docker로 빌드해서 올린다. 자세한 내용은 [GitHub Actions로 arm64 Docker 이미지 빌드하기](/blog/github-actions-arm64) 참고.
+Astro 정적 사이트를 Docker 이미지로 만들고 Compose 스택으로 실행한다. 자세한 멀티플랫폼
+빌드 과정은 [GitHub Actions로 arm64 Docker 이미지 빌드하기](/blog/github-actions-arm64)에서
+설명한다.
 
-> **2026년 8월 운영 구조 업데이트:** 아래 `docker run`과 cron 방식은 홈서버를 처음
-> 구성했을 때의 기록이다. 현재는 운영 Compose와 systemd timer가 새 이미지를 확인하고,
-> healthcheck 실패 시 직전 이미지로 자동 복구한다.
-
-```bash
-# 수동 배포 (처음 한 번)
-docker pull {도커허브아이디}/이미지이름:latest
-docker run -d --name portfolio -p 4321:80 --restart unless-stopped {도커허브아이디}/이미지이름:latest
+```yaml
+services:
+  homepage:
+    image: legyeseul/jhwan-homepage:latest
+    container_name: jhwan-homepage
+    restart: unless-stopped
+    ports:
+      - "4321:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
 ```
 
-초기에는 GitHub Actions가 자동으로 빌드하고, 라즈베리파이 cron이 매분 새 이미지를 확인하도록 구성했다.
+`main`에 push하면 GitHub Actions가 `amd64`와 `arm64` 이미지를 Docker Hub에 발행한다.
+라즈베리파이의 systemd timer는 홈페이지와 BabyWeather 스택의 이미지를 가져와 Compose로
+갱신하고 healthcheck를 기다린다. 실패하면 직전 이미지를 다시 실행한다. 운영 `.env`는
+라즈베리파이에 유지하며 코드 배포 과정에서 복사하거나 덮어쓰지 않는다.
 
 ## 보안 포인트
 

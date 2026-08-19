@@ -2,7 +2,7 @@
 title: '아이날씨 (BabyWeather) — 직접 만들고 운영 중인 육아 외출 지수 웹앱'
 description: "기상청, 에어코리아, TMAP, 카카오맵 API를 활용해 아이와 외출하기 좋은 날씨인지 점수로 알려주는 웹앱. FastAPI, Docker, GitHub Actions, 라즈베리파이로 직접 운영하며 개선 중인 서비스."
 pubDate: '2026-05-29'
-updatedDate: '2026-08-18'
+updatedDate: '2026-08-19'
 category: '프로젝트'
 draft: false
 ---
@@ -161,8 +161,9 @@ GitHub Actions에서 API 이미지와 Web 이미지를 각각 빌드하고 Docke
 - 프론트엔드 정적 파일을 Nginx 이미지에 포함
 - FastAPI와 Web 이미지를 분리
 - GitHub Actions로 멀티 아키텍처 이미지 빌드
-- Docker Compose로 서비스 갱신
-- 로컬 SSH 배포 스크립트로 운영 `.env` 동기화와 헬스체크
+- Raspberry Pi의 systemd timer와 Docker Compose로 서비스 자동 갱신
+- 새 컨테이너 healthcheck 실패 시 직전 이미지로 자동 복구
+- 운영 `.env`는 서버에 유지하고 코드 배포와 분리
 - GitHub Repository Docs로 릴리즈, 운영 결정, 장애 대응 기록 관리
 
 운영 기록의 원장은 저장소 안에 두기로 했다. `README`, `CHANGELOG`, `ROADMAP`, `docs/decisions`, `docs/operations`, `docs/incidents`를 나눠서 릴리즈와 운영 결정을 코드와 함께 버전 관리한다.

@@ -2,6 +2,7 @@
 title: 'GitHub Actions로 arm64 Docker 이미지 빌드하기'
 description: '라즈베리파이에 배포하려면 arm64 빌드가 필요하다. 플랫폼 불일치로 컨테이너가 재시작 루프에 빠진 삽질기'
 pubDate: '2026-05-17'
+updatedDate: '2026-08-19'
 category: '홈랩'
 draft: false
 ---
@@ -33,48 +34,50 @@ on:
     branches:
       - main
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: QEMU 설정
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Buildx 설정
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Docker Hub 로그인
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: 여기에_도커허브_아이디
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: 빌드 & Push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: 도커허브아이디/이미지이름:latest
+          tags: |
+            도커허브아이디/이미지이름:latest
+            도커허브아이디/이미지이름:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 ```
 
-핵심은 `platforms: linux/amd64,linux/arm64` 이 한 줄이다. 두 플랫폼을 동시에 빌드해서 Docker Hub에 올린다.
+핵심은 `platforms: linux/amd64,linux/arm64`다. 두 플랫폼을 같은 태그로 묶어 Docker Hub에
+올리고, 운영용 `latest`와 복구 가능한 커밋별 태그를 함께 발행한다.
 
 ## Dockerfile
 
 Astro 정적 사이트를 nginx로 서빙하는 멀티스테이지 빌드다:
 
 ```dockerfile
-FROM node:lts-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build
 
@@ -87,53 +90,48 @@ EXPOSE 80
 
 ## 라즈베리파이 자동 배포
 
-SSH 배포를 쓰면 되지만, 국가별 접속 제한을 켜놨다면 GitHub Actions 서버(미국)가 차단된다. 그래서 cron pull 방식을 택했다.
+초기에는 cron과 `docker run`을 조합했지만, 컨테이너 생성에는 성공해도 애플리케이션이
+정상 응답하는지 판단하기 어렵고 실패 시 자동 복구도 없었다. 현재는 Compose 파일을 배포
+단위로 두고 systemd timer가 라즈베리파이 안에서 새 이미지를 확인한다.
 
-> **2026년 8월 운영 구조 업데이트:** 아래 스크립트는 초기 자동 배포 구현 기록이다.
-> 현재는 Docker Compose와 systemd timer를 사용하며, 새 컨테이너의 healthcheck가 실패하면
-> 직전 이미지로 자동 복구한다. 외부에서 SSH 포트를 열지 않는 outbound pull 원칙은 같다.
-
-라즈베리파이에 업데이트 스크립트를 만들고:
-
-```bash
-#!/bin/bash
-
-LOG=/var/log/portfolio-update.log
-FAIL_LOG=/var/log/portfolio-fail.log
-DATE=$(date "+%Y-%m-%d %H:%M:%S KST")
-
-CURRENT=$(docker inspect --format='{{.Image}}' portfolio 2>/dev/null)
-docker pull 도커허브아이디/이미지이름:latest >> /dev/null 2>&1
-
-NEW=$(docker inspect --format='{{.Id}}' 도커허브아이디/이미지이름:latest)
-
-if [ "$CURRENT" == "$NEW" ]; then
-  exit 0
-fi
-
-echo "[$DATE] 새 이미지 감지, 업데이트 중..." >> $LOG
-docker stop portfolio >> /dev/null 2>&1
-docker rm portfolio >> /dev/null 2>&1
-docker run -d --name portfolio -p 4321:80 --restart unless-stopped 도커허브아이디/이미지이름:latest >> /dev/null 2>&1
-
-if [ $? -ne 0 ]; then
-  echo "[$DATE] FAIL: 컨테이너 실행 실패" >> $FAIL_LOG
-else
-  echo "[$DATE] 업데이트 완료" >> $LOG
-fi
+```text
+main push
+  → GitHub Actions 검증 및 멀티플랫폼 이미지 발행
+  → Raspberry Pi systemd timer의 outbound pull
+  → docker compose pull/up
+  → 홈페이지 healthcheck
+  → 성공 또는 직전 이미지로 자동 rollback
 ```
 
-cron에 매분 실행 등록:
+홈페이지 Compose에는 운영 이미지와 healthcheck를 함께 선언한다.
 
-```bash
-* * * * * /{절대경로로}/update-portfolio.sh
+```yaml
+services:
+  homepage:
+    image: legyeseul/jhwan-homepage:latest
+    container_name: jhwan-homepage
+    restart: unless-stopped
+    ports:
+      - "4321:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 ```
 
-push하면 Actions가 빌드 & Docker Hub push → 라즈베리파이가 매분 새 이미지 확인 → 변경됐으면 자동 배포. 최대 1분 안에 반영된다.
+업데이터는 홈페이지와 BabyWeather Compose 스택을 함께 확인하고, 새 버전이 정상화되지
+않으면 업데이트 직전의 로컬 이미지로 태그를 되돌린다. GitHub Actions가 홈서버에 접속하는
+방식이 아니라 라즈베리파이가 이미지를 가져오는 구조라 외부에 SSH 포트를 열 필요도 없다.
+현재 설치와 복구 절차는
+[BabyWeather 배포 가이드](https://github.com/jinhwan1030/babyweather/blob/main/docs/operations/deployment.md)에
+한곳으로 모아 관리한다.
 
 ## 빌드 시간
 
-멀티플랫폼 빌드는 단일 플랫폼보다 시간이 훨씬 오래 걸린다. amd64만 빌드하면 1~2분이지만, arm64까지 추가하면 10~20분 걸린다. QEMU로 에뮬레이션해서 빌드하기 때문이다.
+멀티플랫폼 빌드는 QEMU 에뮬레이션 때문에 단일 플랫폼 빌드보다 오래 걸릴 수 있다.
+GitHub Actions 캐시를 연결하면 의존성과 변경되지 않은 이미지 레이어를 재사용해 반복 빌드
+시간을 줄일 수 있다.
 
 ## 마치며
 
