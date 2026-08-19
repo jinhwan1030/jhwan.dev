@@ -40,3 +40,20 @@ npm run db:import -- --apply --database .data/jhwan.db
 같은 Markdown을 다시 가져오면 체크섬이 같은 글은 건너뜁니다. 내용이 바뀐 글만 새 버전으로
 갱신하고 `post_revisions`에 스냅샷을 남깁니다. 같은 slug가 다른 원본 경로에 이미 연결되어 있으면
 전체 가져오기를 롤백합니다.
+
+## 관리자 API 기반
+
+현재 관리자 API 핵심 로직은 HTTP 경로와 분리된 상태이며 아직 실서비스에서 호출할 수 없습니다.
+다음 보호 장치를 먼저 회귀 테스트합니다.
+
+- OAuth Worker가 발급할 HS256 1회용 로그인 티켓 검증
+- 숫자로 고정한 GitHub 사용자 ID allowlist
+- 로그인 티켓 재사용 차단
+- 원문 대신 SHA-256 해시만 저장하는 불투명 세션과 CSRF 토큰
+- `HttpOnly`, `Secure`, `SameSite=Strict`, `__Host-` 관리자 쿠키
+- 수정 버전에 기반한 동시 편집 충돌 방지
+- 게시글 소프트 삭제와 복구, 전체 수정 이력
+- slug 변경 전 주소 보존 및 재사용 차단
+
+GitHub access token은 새 관리자 화면이나 Raspberry Pi DB에 저장하지 않습니다. OAuth Worker와
+홈페이지 서버가 공유할 로그인 티켓 서명 키는 운영 연결 구간에서 별도 secret으로 등록합니다.

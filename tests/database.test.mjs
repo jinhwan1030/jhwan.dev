@@ -22,14 +22,16 @@ test('creates a WAL database and applies migrations idempotently', () => {
       .all()
       .map((row) => row.name);
 
-    assert.deepEqual(first.applied, ['001_initial_content.sql']);
-    assert.equal(first.currentVersion, 1);
+    assert.deepEqual(first.applied, ['001_initial_content.sql', '002_admin_api.sql']);
+    assert.equal(first.currentVersion, 2);
     assert.deepEqual(second.applied, []);
     assert.equal(database.prepare('PRAGMA journal_mode').get().journal_mode, 'wal');
     assert.equal(database.prepare('PRAGMA foreign_keys').get().foreign_keys, 1);
     assert.ok(tables.includes('posts'));
     assert.ok(tables.includes('media'));
     assert.ok(tables.includes('post_revisions'));
+    assert.ok(tables.includes('admin_sessions'));
+    assert.ok(tables.includes('post_slug_history'));
     assert.deepEqual(verifyDatabase(database), { integrity: 'ok', foreignKeyViolations: 0 });
   } finally {
     database.close();
