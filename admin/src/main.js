@@ -2,6 +2,7 @@ import { createDemoAdminApi } from './demo-api.js';
 import { createHttpAdminApi } from './http-api.js';
 import {
   createMarkdownEditor,
+  insertEditorImage,
   isCommandActive,
   runEditorCommand,
   setMarkdown,
@@ -57,6 +58,13 @@ const elements = {
   environmentBadge: document.querySelector('#environment-badge'),
   adminAccount: document.querySelector('#admin-account'),
   logout: document.querySelector('#logout'),
+  insertImage: document.querySelector('#insert-image'),
+  uploadImage: document.querySelector('#upload-image'),
+  imageFile: document.querySelector('#image-file'),
+  heroPreview: document.querySelector('#hero-preview'),
+  heroPreviewImage: document.querySelector('#hero-preview-image'),
+  heroPreviewPath: document.querySelector('#hero-preview-path'),
+  removeHeroImage: document.querySelector('#remove-hero-image'),
 };
 
 const state = {
@@ -70,6 +78,7 @@ const state = {
   slugTouched: false,
   loadingDocument: false,
   recoveryTimer: null,
+  uploadTarget: 'hero',
 };
 
 const editor = createMarkdownEditor({
@@ -308,6 +317,19 @@ function updateDocumentMeta() {
   elements.restoreButton.hidden = !post?.deletedAt;
 }
 
+function updateHeroImage() {
+  const source = state.current?.heroImagePath ?? null;
+  elements.heroPreview.hidden = !source;
+  elements.uploadImage.querySelector('strong').textContent = source ? '대표 이미지 교체' : '이미지 업로드';
+  if (!source) {
+    elements.heroPreviewImage.removeAttribute('src');
+    elements.heroPreviewPath.textContent = '';
+    return;
+  }
+  elements.heroPreviewImage.src = source;
+  elements.heroPreviewPath.textContent = source;
+}
+
 function populateDocument(post) {
   state.loadingDocument = true;
   state.current = post ? structuredClone(post) : null;
@@ -327,6 +349,7 @@ function populateDocument(post) {
   elements.markdownSource.value = markdown;
   updateWordCount(markdown);
   updateDocumentMeta();
+  updateHeroImage();
   updatePreview();
   state.dirty = Boolean(recoveredInput);
   setSaveState(
@@ -394,8 +417,67 @@ function readableError(error) {
     version_conflict: '다른 화면에서 먼저 저장했습니다. 목록을 새로고침한 뒤 변경사항을 다시 확인해주세요.',
     slug_conflict: '이미 사용했거나 이전 주소로 보관 중인 글 주소입니다.',
     invalid_request: '입력값을 확인해주세요.',
+    media_too_large: '이미지는 25 MiB 이하여야 합니다.',
+    invalid_media: '정상적인 이미지 파일인지 확인해주세요.',
+    unsupported_media: 'JPEG, PNG, WebP, GIF, AVIF 이미지만 지원합니다.',
+    media_type_mismatch: '파일 확장자와 실제 이미지 형식이 일치하지 않습니다.',
   };
   return messages[error.code] ?? error.message ?? '요청을 처리하지 못했습니다.';
+}
+
+function beginImageUpload(target) {
+  state.uploadTarget = target;
+  elements.imageFile.value = '';
+  elements.imageFile.click();
+}
+
+function markdownImageAlt(value) {
+  return value.replace(/[\[\]\r\n]/g, ' ').replace(/\s+/g, ' ').trim() || '이미지';
+}
+
+async function uploadSelectedImage() {
+  const [file] = elements.imageFile.files;
+  if (!file) return;
+  if (file.size > 25 * 1024 * 1024) {
+    showToast('이미지는 25 MiB 이하여야 합니다.', { error: true });
+    return;
+  }
+
+  const target = state.uploadTarget;
+  const altText = markdownImageAlt(elements.title.value || file.name.replace(/\.[^.]+$/, ''));
+  elements.uploadImage.disabled = true;
+  elements.insertImage.disabled = true;
+  showToast('이미지를 업로드하는 중입니다.');
+  try {
+    const media = await api.uploadMedia(file, { altText });
+    if (target === 'hero') {
+      state.current = { ...state.current, heroImagePath: media.url };
+      updateHeroImage();
+      markDirty();
+      showToast(media.deduplicated ? '기존 이미지를 대표 이미지로 연결했습니다.' : '대표 이미지를 업로드했습니다.');
+      return;
+    }
+
+    if (state.mode === 'markdown') {
+      const markdown = `![${altText}](${media.url})`;
+      elements.markdownSource.setRangeText(
+        markdown,
+        elements.markdownSource.selectionStart,
+        elements.markdownSource.selectionEnd,
+        'end',
+      );
+      markDirty();
+    } else {
+      if (state.mode === 'preview') switchMode('visual');
+      insertEditorImage(editor, { src: media.url, alt: altText });
+    }
+    showToast(media.deduplicated ? '기존 이미지를 본문에 삽입했습니다.' : '이미지를 업로드해 본문에 삽입했습니다.');
+  } catch (error) {
+    showToast(readableError(error), { error: true });
+  } finally {
+    elements.uploadImage.disabled = false;
+    elements.insertImage.disabled = false;
+  }
 }
 
 async function savePost() {
@@ -529,6 +611,14 @@ elements.newPost.addEventListener('click', startNewPost);
 elements.saveButton.addEventListener('click', savePost);
 elements.deleteButton.addEventListener('click', deletePost);
 elements.restoreButton.addEventListener('click', restorePost);
+elements.uploadImage.addEventListener('click', () => beginImageUpload('hero'));
+elements.insertImage.addEventListener('click', () => beginImageUpload('body'));
+elements.imageFile.addEventListener('change', uploadSelectedImage);
+elements.removeHeroImage.addEventListener('click', () => {
+  state.current = { ...state.current, heroImagePath: null };
+  updateHeroImage();
+  markDirty();
+});
 elements.historyOpen.addEventListener('click', openHistory);
 elements.historyClose.addEventListener('click', () => elements.historyDialog.close());
 elements.logout.addEventListener('click', async () => {

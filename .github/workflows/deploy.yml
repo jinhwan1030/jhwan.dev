@@ -28,12 +28,6 @@ jobs:
       - name: 의존성 설치
         run: npm ci
 
-      - name: CMS 설정 검사
-        run: node scripts/validate-cms-config.mjs
-
-      - name: CMS 설정 회귀 테스트
-        run: node scripts/validate-cms-config.test.mjs
-
       - name: Astro 검사
         run: npm run check
 
@@ -43,10 +37,10 @@ jobs:
       - name: 동적 콘텐츠와 관리자 HTTP API 검사
         run: npm run test:runtime
 
-      - name: 새 관리자 UI 회귀 테스트
+      - name: 관리자 UI 회귀 테스트
         run: npm run test:admin-ui
 
-      - name: 새 관리자 UI 독립 빌드
+      - name: 관리자 UI 독립 빌드
         run: npm run admin:build
 
       - name: 기존 콘텐츠와 미디어 이전 사전 검사
@@ -59,6 +53,9 @@ jobs:
 
       - name: 홈페이지 빌드 및 초안 비공개 검사
         run: node scripts/validate-blog-output.mjs
+
+      - name: 운영 Content Studio 산출물 검사
+        run: npm run admin:validate-build
 
       - name: 관리자 HTTP 런타임 검사
         run: node scripts/validate-admin-runtime.mjs

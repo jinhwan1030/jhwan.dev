@@ -18,6 +18,9 @@ test('admin shell keeps the post list visible before the editor and avoids remot
   assert.match(html, /id="markdown-source"/);
   assert.match(html, /id="article-preview"/);
   assert.match(html, /id="save-post"/);
+  assert.match(html, /id="insert-image"/);
+  assert.match(html, /id="upload-image"/);
+  assert.match(html, /id="image-file"/);
   assert.doesNotMatch(html, /<(?:script|link)\b[^>]+(?:src|href)="https?:\/\//);
   assert.match(html, /href="https:\/\/auth\.jhwan\.dev\/admin\/auth"/);
 });
@@ -138,6 +141,8 @@ test('visual editor preserves common Markdown structures during round trips', as
     "console.log('admin');",
     '```',
     '',
+    '![관리자 이미지](/uploads/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png)',
+    '',
   ].join('\n');
 
   editor = createMarkdownEditor({ element: dom.window.document.querySelector('#editor'), content: source });
@@ -147,6 +152,7 @@ test('visual editor preserves common Markdown structures during round trips', as
   assert.match(firstRoundTrip, /`인라인 코드`/);
   assert.match(firstRoundTrip, /SQLite/);
   assert.match(firstRoundTrip, /console\.log\('admin'\)/);
+  assert.match(firstRoundTrip, /!\[관리자 이미지\]\(\/uploads\/a{64}\.png\)/);
 
   setMarkdown(editor, firstRoundTrip, false);
   const secondRoundTrip = editor.getMarkdown();

@@ -1,118 +1,121 @@
 # 글 관리
 
-jhwan.dev의 글은 `/admin/`에 설치한 Sveltia CMS에서 작성합니다. CMS가 생성한 Markdown과
-업로드 이미지는 기존 Astro 콘텐츠 구조에 저장되므로, 별도의 데이터베이스나 런타임
-관리자 서버는 필요하지 않습니다.
+jhwan.dev의 글은 `https://jhwan.dev/admin/`의 자체 Content Studio에서 관리합니다. GitHub는
+관리자 본인 확인에만 사용합니다. 글과 이미지는 홈페이지 서버의 영속 SQLite와 업로드 디렉터리에
+저장되므로 게시할 때 Git 커밋이나 GitHub Actions 빌드를 기다리지 않습니다.
 
 ## 게시 흐름
 
-1. `https://jhwan.dev/admin/`에서 GitHub 계정으로 로그인합니다.
-2. **블로그 → 새 글**에서 제목, 설명, 날짜, 카테고리와 본문을 작성합니다.
-3. 처음 저장할 때는 **초안으로 숨기기**를 켜 둡니다.
-4. 검토가 끝나면 초안 설정을 끄고 저장합니다.
-5. CMS가 `main` 브랜치에 커밋하면 GitHub Actions가 홈페이지 이미지를 빌드합니다.
-6. Raspberry Pi의 systemd 타이머가 새 이미지를 가져와 healthcheck 후 반영합니다.
+1. `/admin/`에서 **GitHub로 로그인**을 누릅니다.
+2. **새 글**에서 제목, 주소, 설명, 카테고리, 본문과 공개 상태를 입력합니다.
+3. 필요한 이미지는 본문 도구막대 또는 대표 이미지 영역에서 업로드합니다.
+4. 작성 중에는 **초안**, 게시할 때는 **공개**를 선택해 저장합니다.
+5. 공개 시각이 현재보다 늦으면 해당 시각이 지난 뒤 사이트에 나타납니다.
 
-초안은 Git에는 저장되지만 홈페이지, 글 목록, RSS에는 나오지 않습니다. 대표 이미지는
-`src/assets/blog/`에 저장되어 Astro 이미지 파이프라인을 거칩니다.
-로컬 개발 서버에서는 저장한 초안을 상세 페이지와 글 목록에서 미리볼 수 있지만,
-production 빌드에서는 상세 HTML 자체를 만들지 않습니다.
-모든 글은 `draft: true` 또는 `draft: false`를 명시하며, 상태가 빠진 글은 CI에서 거부합니다.
+저장된 공개 글은 다음 요청부터 홈페이지, 글 목록, RSS와 사이트맵에 반영됩니다. 글 삭제는 즉시
+영구 삭제하지 않고 휴지통으로 이동하며 관리자 화면에서 복구할 수 있습니다. 동시에 열린 두 화면이
+같은 글을 덮어쓰지 않도록 버전 충돌을 검사하고, 저장 전 수정 이력을 남깁니다.
 
-`main`에 push하면 홈페이지 배포 워크플로가 Docker 이미지를 만들기 전에 CMS 설정과
-회귀 테스트, Astro 검사와 빌드, 초안·내부 링크·SEO 산출물 검사를 먼저 실행합니다.
-전역 미디어 경로, Astro용 컬렉션 상대 경로, OAuth 전용 로그인이나 필수 글 필드가
-잘못되거나 초안이 상세 페이지·글 목록·RSS에 포함되거나 내부 링크와 글 메타데이터가
-깨지면 Docker Hub에 이미지를 올리지 않습니다.
+편집기는 시각 편집, Markdown 원문, 미리보기를 제공합니다. 브라우저에 서버보다 새로운 임시
+저장본이 있으면 다시 접속할 때 복구 여부를 묻습니다. 본문과 대표 이미지는 JPEG, PNG, WebP,
+GIF, AVIF를 지원하며 파일당 최대 25 MiB입니다. 서버는 실제 이미지 형식과 크기를 검사하고 같은
+내용의 파일은 한 번만 보관합니다.
 
-## 로컬 확인
+## 운영 인증 구조
 
-저장소 루트에서 개발 서버를 실행합니다.
+`auth.jhwan.dev`의 Cloudflare Worker가 GitHub OAuth를 처리합니다.
 
-```bash
-npm run dev
-```
+1. Worker가 `read:user` 권한으로 GitHub 숫자 사용자 ID를 확인합니다.
+2. ID가 `ADMIN_GITHUB_USER_ID`와 일치할 때만 2분짜리 일회성 로그인 티켓을 발급합니다.
+3. GitHub access token은 Worker 밖이나 브라우저로 전달하지 않습니다.
+4. 홈페이지 서버가 티켓을 한 번 교환해 8시간짜리 관리자 세션을 만듭니다.
 
-그런 다음 Chromium 기반 브라우저에서 `http://localhost:4321/admin/index.html`에 접속해
-**Work with Local Repository**를 누르고 `jhwan.dev` 저장소 루트를 선택합니다. 별도 프록시
-서버는 필요하지 않습니다. Astro 개발 서버에서는 정적 폴더의 `index.html` 경로를 직접
-사용하며, 운영 Nginx에서는 `/admin/`으로 접속합니다.
+세션은 `HttpOnly`, `Secure`, `SameSite=Strict` 쿠키를 사용하고 변경 요청은 별도 CSRF 토큰을
+검증합니다. 세션과 CSRF 원문은 DB에 저장하지 않고 SHA-256 해시만 보관합니다.
 
-로컬 저장소 모드에서 저장하면 실제 파일이 변경됩니다. 확인용 글은 **초안으로 숨기기**를
-유지하고, 생성된 변경을 검토한 뒤 직접 커밋합니다. 이 기능은 File System Access API를
-사용하므로 Firefox와 Safari가 아닌 Chrome, Edge 등 Chromium 기반 브라우저가 필요합니다.
+### GitHub OAuth App
 
-## 운영 인증
+GitHub **Settings → Developer settings → OAuth Apps**의 전용 App은 다음 값을 사용합니다.
 
-CMS는 GitHub 저장소 `jinhwan1030/jhwan.dev`와 `auth.jhwan.dev`의 Cloudflare Worker를
-사용합니다. Worker 소스와 테스트는 `deploy/cloudflare/cms-oauth/`에 있으며, Client Secret은
-저장소나 Docker 이미지에 넣지 않습니다.
-
-### 1. GitHub OAuth App 만들기
-
-GitHub **Settings → Developer settings → OAuth Apps → New OAuth App**에서 다음 값으로
-만듭니다.
-
-- Application name: `jhwan.dev CMS`
+- Application name: `jhwan.dev Content Studio`
 - Homepage URL: `https://jhwan.dev/admin/`
 - Authorization callback URL: `https://auth.jhwan.dev/callback`
 
-발급된 Client ID와 Client Secret은 다음 단계에서만 사용합니다. `jhwan.dev` 저장소는
-공개 저장소이므로 CMS 설정과 Worker는 전체 비공개 저장소 권한이 아닌 `public_repo`
-scope만 요청합니다. GitHub OAuth App의 scope는 특정 저장소 하나로 한정되지는 않으므로,
-관리자용 OAuth App으로만 사용하고 불필요해지면 GitHub에서 폐기합니다.
+이 OAuth App은 저장소 쓰기 권한을 요청하지 않습니다. Client Secret은 저장소, 홈페이지 Docker
+이미지 또는 Raspberry Pi에 넣지 않고 Cloudflare Worker Secret으로만 보관합니다.
 
-고정해서 사용하는 Sveltia CMS 버전은 OAuth 팝업을 열 때 내부 기본값인 `repo,user`를
-인증 프록시에 전달하며 `backend.auth_scope` 설정을 사용하지 않습니다. Worker는 이 알려진
-요청값을 GitHub로 전달하지 않고 `public_repo`로 축소해 승인 화면을 엽니다. 다른 scope는
-거부하며, Worker 설정 자체도 `public_repo` 이외의 값을 허용하지 않습니다.
+### Cloudflare Worker secret
 
-### 2. Worker 최초 배포
+로컬 최초 설정 파일은 `deploy/cloudflare/cms-oauth/.dev.vars`이며 Git에서 제외됩니다.
+
+```dotenv
+GITHUB_OAUTH_ID="GitHub OAuth App Client ID"
+GITHUB_OAUTH_SECRET="GitHub OAuth App Client Secret"
+ADMIN_GITHUB_USER_ID="숫자로 된 GitHub 사용자 ID"
+ADMIN_LOGIN_TICKET_SECRET="32바이트 이상의 임의 문자열"
+```
+
+`ADMIN_LOGIN_TICKET_SECRET`은 Raspberry Pi의 홈페이지 `.env` 값과 정확히 같아야 합니다. 최초
+Worker 배포와 secret 등록은 다음 명령으로 수행합니다.
 
 ```bash
 cd deploy/cloudflare/cms-oauth
-cp .dev.vars.example .dev.vars
-```
-
-`.dev.vars`에 방금 발급한 두 값을 입력합니다. 이 파일은 Git에서 제외됩니다.
-
-```dotenv
-GITHUB_OAUTH_ID="..."
-GITHUB_OAUTH_SECRET="..."
-```
-
-Cloudflare 로그인 후 두 값을 암호화된 Worker Secret으로 함께 올리며 최초 배포합니다.
-
-```bash
+npm test
 npx --yes wrangler@4.123.0 login
 npm run deploy -- --secrets-file .dev.vars
 ```
 
-`wrangler.jsonc`가 `auth.jhwan.dev`를 Worker Custom Domain으로 등록하므로 별도 원본 서버나
-TLS 인증서가 필요하지 않습니다. 같은 이름의 기존 DNS 레코드가 있다면 최초 배포 전에
-제거해야 합니다.
+이후 Worker 코드 변경은 `.github/workflows/deploy-cms-oauth.yml`이 테스트한 뒤 배포합니다.
+GitHub의 `cms-oauth` Environment에는 `CLOUDFLARE_ACCOUNT_ID`와 Workers Scripts 편집 범위의
+`CLOUDFLARE_API_TOKEN`을 등록합니다. GitHub OAuth secret 네 개는 Cloudflare에 계속 보존되며
+일반 코드 배포 때 다시 올리지 않습니다.
 
-### 3. 이후 push 자동 배포
+### Raspberry Pi 홈페이지 환경 변수
 
-GitHub 저장소의 `cms-oauth` Environment 또는 Repository Secrets에 아래 값을 등록합니다.
+`/home/jinhwan/projects/jhwan-homepage/.env`에는 다음 값을 권한 `0600`으로 보관합니다.
 
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_API_TOKEN`: 해당 계정의 Workers Scripts 편집 권한만 가진 전용 토큰
+```dotenv
+JHWAN_ADMIN_ENABLED=true
+JHWAN_DATABASE_PATH=/data/jhwan.db
+JHWAN_MEDIA_PATH=/data/uploads
+ADMIN_GITHUB_USER_ID="Worker와 같은 숫자 ID"
+ADMIN_LOGIN_TICKET_SECRET="Worker와 같은 임의 문자열"
+```
 
-두 값이 있으면 `.github/workflows/deploy-cms-oauth.yml`이 Worker 관련 변경을 테스트한 뒤
-자동 배포합니다. 자동 배포는 최초 설치에서 연결한 `auth.jhwan.dev` 도메인과 Route를
-변경하지 않고 새 Worker 버전만 업로드하고 활성화합니다. 따라서 CI 토큰에는 Billing,
-DNS, Workers Routes 권한이 필요하지 않습니다. 값이 아직 없으면 테스트만 통과하고 배포
-단계는 안전하게 건너뜁니다.
-Cloudflare에 저장된 `GITHUB_OAUTH_ID`와 `GITHUB_OAUTH_SECRET`은 이후 코드 배포에서도
-유지됩니다.
+## 배포와 확인
 
-### 4. 확인
+Content Studio 소스는 `admin/`에 있습니다. 홈페이지 빌드가 이를 번들링해 운영 산출물의
+`/admin/`에 설치하므로 별도 관리자 컨테이너는 없습니다.
+
+```bash
+npm run test:admin-ui
+npm run admin:build
+npm run build
+npm run admin:validate-build
+node scripts/validate-admin-runtime.mjs
+```
+
+`main` push는 홈페이지 코드와 관리자 화면을 Docker 이미지로 배포합니다. 반면 관리 화면에서
+글을 저장하는 행위는 DB만 갱신하므로 Actions나 컨테이너 재배포를 실행하지 않습니다.
+
+운영 확인:
 
 ```bash
 curl --fail https://auth.jhwan.dev/health
+curl --fail https://jhwan.dev/admin/
 ```
 
-`jhwan CMS OAuth proxy: ok`가 나오면 `https://jhwan.dev/admin/`에서 **GitHub로 로그인**을
-선택합니다. 로그인한 GitHub 계정에 `jinhwan1030/jhwan.dev` 쓰기 권한이 있어야 글을
-저장할 수 있습니다.
+첫 응답은 `jhwan administrator OAuth: ok`, 두 번째 응답은 `jhwan.dev Content Studio` 제목을
+포함해야 합니다. 로그인 문제를 확인할 때 GitHub Client Secret이나 로그인 티켓을 로그에 출력하지
+않습니다.
+
+## 로컬 UI 확인
+
+운영 API 없이 화면만 확인하려면 다음 명령을 실행하고 Vite가 안내한 주소에 `?demo=1`을 붙입니다.
+
+```bash
+npm run admin:dev
+```
+
+데모 모드는 메모리 데이터만 사용합니다. 실제 DB·인증·업로드 동작은 자동 런타임 검증 또는
+HTTPS 운영 환경에서 확인합니다. 로컬 파일을 직접 선택해 Git에 글을 쓰는 기능은 사용하지 않습니다.

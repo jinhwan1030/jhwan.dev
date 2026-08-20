@@ -23,6 +23,11 @@ Actions 이미지 빌드가 끝나면 라즈베리파이가 새 이미지를 자
 성공한 뒤에만 `.env`의 `JHWAN_ADMIN_ENABLED=true`를 적용합니다. 운영 비밀값은 이미지와 Compose에
 기록하지 않고 `/home/jinhwan/projects/jhwan-homepage/.env`에 권한 `0600`으로 둡니다.
 
+운영 `/admin/`은 홈페이지 이미지에 함께 포함된 Content Studio입니다. 게시글은 `/data/jhwan.db`,
+업로드 이미지는 `/data/uploads`에 즉시 저장되므로 글 저장만으로 컨테이너를 다시 빌드하거나
+배포하지 않습니다. `ADMIN_GITHUB_USER_ID`와 `ADMIN_LOGIN_TICKET_SECRET`은 Cloudflare OAuth
+Worker에 등록한 값과 같아야 합니다.
+
 ## 백업과 복구
 
 `jhwan-homepage-backup.timer`는 매일 03:30 전후에 온라인 SQLite 백업과 전체 업로드 사본을 만듭니다.

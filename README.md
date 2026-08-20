@@ -32,9 +32,7 @@ src/
 │   └── rss.xml.js    # RSS 피드
 └── styles/
     └── global.css
-public/
-└── admin/            # 전환 전 Sveltia CMS 운영 화면
-admin/                # 새 Content Studio 독립 프런트엔드
+admin/                # 운영 Content Studio 프런트엔드
 database/             # SQLite 스키마 마이그레이션
 scripts/              # 콘텐츠·미디어 이전 및 운영 검증 도구
 ```
@@ -50,10 +48,9 @@ npm run preview   # 빌드 미리보기
 
 ## Content Management
 
-현재 운영 `/admin/`은 UI 전환 안전망으로 Sveltia CMS를 유지합니다. 홈페이지 런타임은 Raspberry Pi의
-영속 SQLite에서 목록·상세·RSS·사이트맵을 즉시 렌더링합니다. 최초 설치 때 기존 Markdown과 미디어를
-한 번 이전하고 검증 백업이 성공한 뒤 관리자 API를 엽니다. 새 Content Studio를 운영 `/admin/`에
-연결하는 작업은 다음 구간입니다. 기존 게시 흐름은
+운영 `/admin/`은 자체 Content Studio입니다. GitHub OAuth로 관리자 본인만 확인하며, 글과 이미지는
+Raspberry Pi의 영속 SQLite·업로드 디렉터리에 직접 저장됩니다. 저장한 글은 Git 커밋이나 이미지
+재빌드를 기다리지 않고 다음 요청부터 목록·상세·RSS·사이트맵에 반영됩니다. 게시 흐름과 인증 설정은
 [`docs/content-management.md`](./docs/content-management.md)에 정리되어 있습니다.
 
 기존 Markdown과 `src/assets/blog` 이미지는 `npm run db:migrate-legacy`로 쓰기 없는 사전 검사를

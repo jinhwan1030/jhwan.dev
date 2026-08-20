@@ -22,13 +22,13 @@ const DEMO_POSTS = [
 - **서식 도구**를 눌러 Markdown을 몰라도 글을 쓸 수 있습니다.
 - 오른쪽에서 공개 상태와 주소를 관리합니다.
 
-> 이 화면은 아직 운영 API에 연결되지 않은 로컬 미리보기입니다.
+> 데모 모드에서는 서버를 변경하지 않고 편집 흐름만 확인할 수 있습니다.
 
 | 항목 | 상태 |
 | --- | --- |
 | SQLite 저장소 | 준비됨 |
 | 관리자 API | 준비됨 |
-| 운영 연결 | 다음 구간 |
+| 운영 연결 | 완료 |
 `,
     category: '개발',
     status: 'published',
@@ -184,6 +184,22 @@ export function createDemoAdminApi({ clock = () => Date.now() } = {}) {
       await wait();
       findPost(id);
       return clone(revisions.get(id) ?? []);
+    },
+
+    async uploadMedia(file, { altText = '' } = {}) {
+      await wait();
+      return {
+        id: `demo-media-${Date.now()}`,
+        storageKey: file.name,
+        url: URL.createObjectURL(file),
+        originalName: file.name,
+        mimeType: file.type,
+        byteSize: file.size,
+        width: null,
+        height: null,
+        altText,
+        deduplicated: false,
+      };
     },
   };
 }

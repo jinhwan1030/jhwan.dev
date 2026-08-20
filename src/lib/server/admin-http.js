@@ -4,6 +4,7 @@ import {
   AuthenticationError,
 } from './admin-auth.js';
 import { AdminApiError } from './admin-post-service.js';
+import { ManagedMediaError } from './media-storage.js';
 import { isAdminEnabled } from './admin-runtime.js';
 
 const JSON_HEADERS = {
@@ -21,7 +22,7 @@ export function json(data, { status = 200, headers } = {}) {
 }
 
 export function errorResponse(error) {
-  if (error instanceof AdminApiError || error instanceof AuthenticationError) {
+  if (error instanceof AdminApiError || error instanceof AuthenticationError || error instanceof ManagedMediaError) {
     const status = error.status ?? (error.code === 'invalid_csrf_token' ? 403 : 401);
     return json(
       { error: { code: error.code, message: error.message, details: error.details } },

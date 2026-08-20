@@ -8,6 +8,7 @@ import { signAdminLoginTicket } from '../src/lib/server/admin-auth.js';
 import { closeAdminRuntime } from '../src/lib/server/admin-runtime.js';
 import { closeContentRuntime, getContentRuntime } from '../src/lib/server/content-runtime.js';
 import * as postRoute from '../src/pages/api/admin/posts/[id].js';
+import * as mediaRoute from '../src/pages/api/admin/media/index.js';
 import * as postsRoute from '../src/pages/api/admin/posts/index.js';
 import * as sessionRoute from '../src/pages/api/admin/session.js';
 
@@ -38,6 +39,7 @@ test('administrator HTTP routes exchange a ticket and persist a published post',
     JHWAN_ADMIN_ENABLED: process.env.JHWAN_ADMIN_ENABLED,
     JHWAN_DATABASE_PATH: process.env.JHWAN_DATABASE_PATH,
     JHWAN_CONTENT_SEED_PATH: process.env.JHWAN_CONTENT_SEED_PATH,
+    JHWAN_MEDIA_PATH: process.env.JHWAN_MEDIA_PATH,
     ADMIN_GITHUB_USER_ID: process.env.ADMIN_GITHUB_USER_ID,
     ADMIN_LOGIN_TICKET_SECRET: process.env.ADMIN_LOGIN_TICKET_SECRET,
   };
@@ -45,6 +47,7 @@ test('administrator HTTP routes exchange a ticket and persist a published post',
     JHWAN_ADMIN_ENABLED: 'true',
     JHWAN_DATABASE_PATH: path.join(directory, 'content.db'),
     JHWAN_CONTENT_SEED_PATH: path.resolve('src/content/blog'),
+    JHWAN_MEDIA_PATH: path.join(directory, 'uploads'),
     ADMIN_GITHUB_USER_ID: '12345678',
     ADMIN_LOGIN_TICKET_SECRET: SECRET,
   });
@@ -110,4 +113,35 @@ test('administrator HTTP routes exchange a ticket and persist a published post',
     }, `__Host-jhwan_admin_session=${sessionToken}`),
   });
   assert.equal(missingCsrf.status, 403);
+
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zr9sAAAAASUVORK5CYII=',
+    'base64',
+  );
+  const uploadForm = new FormData();
+  uploadForm.append('file', new Blob([png], { type: 'image/png' }), '관리자 이미지.png');
+  uploadForm.append('altText', '관리자 이미지');
+  const uploadResponse = await mediaRoute.POST({
+    request: new Request('https://jhwan.dev/api/admin/media', {
+      method: 'POST',
+      headers: { Cookie: cookies, 'X-CSRF-Token': csrfToken },
+      body: uploadForm,
+    }),
+  });
+  assert.equal(uploadResponse.status, 201);
+  const uploaded = (await uploadResponse.json()).media;
+  assert.equal(uploaded.mimeType, 'image/png');
+  assert.match(uploaded.url, /^\/uploads\/[a-f0-9]{64}\.png$/);
+  assert.equal(fs.existsSync(path.join(directory, 'uploads', uploaded.storageKey)), true);
+
+  const blockedForm = new FormData();
+  blockedForm.append('file', new Blob([png], { type: 'image/png' }), 'blocked.png');
+  const blockedUpload = await mediaRoute.POST({
+    request: new Request('https://jhwan.dev/api/admin/media', {
+      method: 'POST',
+      headers: { Cookie: `__Host-jhwan_admin_session=${sessionToken}` },
+      body: blockedForm,
+    }),
+  });
+  assert.equal(blockedUpload.status, 403);
 });

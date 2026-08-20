@@ -1,4 +1,5 @@
 import { Editor } from '@tiptap/core';
+import Image from '@tiptap/extension-image';
 import { TableKit } from '@tiptap/extension-table';
 import { Markdown } from '@tiptap/markdown';
 import StarterKit from '@tiptap/starter-kit';
@@ -15,6 +16,7 @@ export function createMarkdownEditor({ element, content = '', onChange = () => {
           defaultProtocol: 'https',
         },
       }),
+      Image.configure({ allowBase64: false, inline: false }),
       TableKit.configure({
         table: { resizable: true },
       }),
@@ -66,6 +68,10 @@ export function runEditorCommand(editor, command, value) {
     unlink: () => chain.unsetLink().run(),
   };
   return commands[command]?.() ?? false;
+}
+
+export function insertEditorImage(editor, { src, alt = '', title = null }) {
+  return editor.chain().focus().setImage({ src, alt, title }).run();
 }
 
 export function isCommandActive(editor, command) {

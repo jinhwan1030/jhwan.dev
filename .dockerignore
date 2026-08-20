@@ -1,10 +1,11 @@
 .git
 .github
+**/.dev.vars
+**/.env
 .astro
 .vscode
 dist
 dist-admin
-admin
 node_modules
 npm-debug.log*
 .DS_Store

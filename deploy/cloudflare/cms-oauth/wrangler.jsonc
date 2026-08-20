@@ -12,7 +12,7 @@
   "vars": {
     "CMS_ORIGIN": "https://jhwan.dev",
     "OAUTH_CALLBACK_URL": "https://auth.jhwan.dev/callback",
-    "GITHUB_SCOPE": "public_repo"
+    "GITHUB_SCOPE": "read:user"
   },
   "secrets": {
     "required": [

@@ -35,7 +35,8 @@ async function parseResponse(response) {
 export function createHttpAdminApi({ baseUrl = '/api/admin' } = {}) {
   async function request(path, { method = 'GET', body, csrf = false } = {}) {
     const headers = { Accept: 'application/json' };
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    const formBody = typeof FormData !== 'undefined' && body instanceof FormData;
+    if (body !== undefined && !formBody) headers['Content-Type'] = 'application/json';
     if (csrf) {
       const token = readCookie('__Host-jhwan_admin_csrf');
       if (!token) throw new AdminHttpError(403, 'invalid_csrf_token', '보안 토큰이 없습니다. 다시 로그인해주세요.');
@@ -45,7 +46,7 @@ export function createHttpAdminApi({ baseUrl = '/api/admin' } = {}) {
       method,
       headers,
       credentials: 'same-origin',
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : (formBody ? body : JSON.stringify(body)),
     });
     return parseResponse(response);
   }
@@ -105,6 +106,13 @@ export function createHttpAdminApi({ baseUrl = '/api/admin' } = {}) {
 
     async listRevisions(id) {
       return (await request(`/posts/${encodeURIComponent(id)}/revisions`)).revisions;
+    },
+
+    async uploadMedia(file, { altText = '' } = {}) {
+      const form = new FormData();
+      form.append('file', file, file.name);
+      form.append('altText', altText);
+      return (await request('/media', { method: 'POST', body: form, csrf: true })).media;
     },
   };
 }

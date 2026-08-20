@@ -27,6 +27,7 @@ export async function startRuntimeServer({
       PORT: String(port),
       JHWAN_ADMIN_ENABLED: 'false',
       JHWAN_DATABASE_PATH: path.resolve(databasePath),
+      JHWAN_MEDIA_PATH: path.resolve(path.dirname(databasePath), 'uploads'),
       JHWAN_CONTENT_SEED_PATH: path.resolve(contentDirectory),
       ...environment,
     },
