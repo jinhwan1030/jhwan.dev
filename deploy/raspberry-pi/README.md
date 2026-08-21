@@ -61,7 +61,13 @@ Worker에 등록한 값과 같아야 합니다.
 포트는 건드리지 않습니다. DB 무결성과 미디어 체크섬뿐 아니라 글 목록·상세, RSS, 사이트맵,
 업로드 응답을 확인하고 리허설 동안 관리자 API가 비활성화되어 있는지도 검증합니다.
 
+`jhwan-homepage-restore-rehearsal.timer`는 매주 일요일 04:30 이후 임의의 30분 안에 같은 검사를
+자동 실행합니다. 일일 백업과 겹치면 최대 10분 동안 백업 잠금을 기다리며, 낮은 CPU·I/O 우선순위로
+실행합니다. 결과와 실패 원인은 systemd journal에 남고 다음 명령으로 확인할 수 있습니다.
+
 ```bash
 /usr/local/sbin/jhwan-homepage-restore-rehearsal
 /usr/local/sbin/jhwan-homepage-restore-rehearsal --backup YYYYMMDD-HHMMSS
+systemctl status jhwan-homepage-restore-rehearsal.timer
+sudo journalctl -u jhwan-homepage-restore-rehearsal.service -n 100 --no-pager
 ```

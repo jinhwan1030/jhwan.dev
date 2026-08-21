@@ -11,6 +11,12 @@ import { migrateDatabase } from '../src/lib/server/migrations.js';
 import { createPostRepository } from '../src/lib/server/post-repository.js';
 
 const REHEARSAL_SCRIPT = path.resolve('deploy/raspberry-pi/rehearse-homepage-restore.sh');
+const REHEARSAL_SERVICE = path.resolve(
+  'deploy/raspberry-pi/jhwan-homepage-restore-rehearsal.service.in',
+);
+const REHEARSAL_TIMER = path.resolve(
+  'deploy/raspberry-pi/jhwan-homepage-restore-rehearsal.timer',
+);
 
 function createFixture(context) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jhwan-restore-rehearsal-'));
@@ -144,9 +150,26 @@ test('rejects a restored runtime whose media response does not match the backup'
 test('keeps the rehearsal off production data and host ports', () => {
   const source = fs.readFileSync(REHEARSAL_SCRIPT, 'utf8');
 
-  assert.match(source, /mktemp -d \/tmp\/jhwan-homepage-restore-rehearsal/);
+  assert.match(source, /JHWAN_HOMEPAGE_REHEARSAL_ROOT:-\/tmp/);
+  assert.match(source, /mktemp -d "\$rehearsal_root_real\/jhwan-homepage-restore-rehearsal/);
   assert.match(source, /--env JHWAN_ADMIN_ENABLED=false/);
   assert.match(source, /--network-alias homepage/);
   assert.doesNotMatch(source, /--publish|-p [0-9]/);
   assert.doesNotMatch(source, /JHWAN_HOMEPAGE_DATA_DIR|\/projects\/jhwan-homepage\/data/);
+});
+
+test('schedules the isolated rehearsal weekly with bounded low-priority execution', () => {
+  const service = fs.readFileSync(REHEARSAL_SERVICE, 'utf8');
+  const timer = fs.readFileSync(REHEARSAL_TIMER, 'utf8');
+
+  assert.match(service, /ExecStart=\/usr\/local\/sbin\/jhwan-homepage-restore-rehearsal/);
+  assert.match(service, /Environment=JHWAN_HOMEPAGE_REHEARSAL_LOCK_WAIT_SECONDS=600/);
+  assert.match(service, /Nice=15/);
+  assert.match(service, /IOSchedulingClass=idle/);
+  assert.match(service, /TimeoutStartSec=20min/);
+  assert.match(service, /PrivateTmp=true/);
+  assert.match(service, /ReadWritePaths=__REHEARSAL_ROOT__ \/run\/lock/);
+  assert.match(timer, /OnCalendar=Sun \*-\*-\* 04:30:00/);
+  assert.match(timer, /RandomizedDelaySec=30min/);
+  assert.match(timer, /Persistent=true/);
 });

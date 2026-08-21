@@ -5,6 +5,8 @@ set -Eeuo pipefail
 BACKUP_ROOT="${JHWAN_HOMEPAGE_BACKUP_ROOT:-$HOME/backups/jhwan-homepage}"
 LOCK_FILE="${JHWAN_HOMEPAGE_BACKUP_LOCK:-/run/lock/jhwan-homepage-backup.lock}"
 CONTAINER_NAME="${JHWAN_HOMEPAGE_CONTAINER:-jhwan-homepage}"
+REHEARSAL_ROOT="${JHWAN_HOMEPAGE_REHEARSAL_ROOT:-/tmp}"
+LOCK_WAIT_SECONDS="${JHWAN_HOMEPAGE_REHEARSAL_LOCK_WAIT_SECONDS:-0}"
 BACKUP_STAMP=""
 
 usage() {
@@ -33,16 +35,25 @@ for command_name in docker flock realpath sha256sum mktemp; do
     exit 1
   }
 done
+[[ "$LOCK_WAIT_SECONDS" =~ ^[0-9]+$ ]] || {
+  echo "백업 잠금 대기 시간은 0 이상의 정수여야 합니다." >&2
+  exit 1
+}
 
 [[ -d "$BACKUP_ROOT" && ! -L "$BACKUP_ROOT" ]] || {
   echo "백업 디렉터리가 없습니다: $BACKUP_ROOT" >&2
   exit 1
 }
 backup_root_real="$(realpath -e -- "$BACKUP_ROOT")"
+[[ -d "$REHEARSAL_ROOT" && ! -L "$REHEARSAL_ROOT" ]] || {
+  echo "리허설 임시 루트가 일반 디렉터리가 아닙니다: $REHEARSAL_ROOT" >&2
+  exit 1
+}
+rehearsal_root_real="$(realpath -e -- "$REHEARSAL_ROOT")"
 
 exec 9>"$LOCK_FILE"
-if ! flock --nonblock 9; then
-  echo "다른 홈페이지 백업 또는 복구가 실행 중입니다." >&2
+if ! flock --wait "$LOCK_WAIT_SECONDS" 9; then
+  echo "다른 홈페이지 백업 또는 복구가 실행 중이라 ${LOCK_WAIT_SECONDS}초 안에 시작하지 못했습니다." >&2
   exit 1
 fi
 
@@ -90,10 +101,10 @@ done
 image_id="$(docker container inspect --format '{{.Image}}' "$CONTAINER_NAME" 2>/dev/null || true)"
 [[ -n "$image_id" ]] || { echo "홈페이지 이미지 ID를 확인할 수 없습니다." >&2; exit 1; }
 
-work_directory="$(mktemp -d /tmp/jhwan-homepage-restore-rehearsal.XXXXXX)"
+work_directory="$(mktemp -d "$rehearsal_root_real/jhwan-homepage-restore-rehearsal.XXXXXX")"
 work_real="$(realpath -e -- "$work_directory")"
 case "$work_real" in
-  /tmp/jhwan-homepage-restore-rehearsal.*) ;;
+  "$rehearsal_root_real"/jhwan-homepage-restore-rehearsal.*) ;;
   *) echo "안전하지 않은 임시 경로를 거부합니다: $work_real" >&2; exit 1 ;;
 esac
 network_name="jhwan-restore-check-$$"

@@ -1,0 +1,12 @@
+[Unit]
+Description=Rehearse the latest jhwan.dev content backup every week
+
+[Timer]
+OnCalendar=Sun *-*-* 04:30:00
+AccuracySec=10min
+RandomizedDelaySec=30min
+Persistent=true
+Unit=jhwan-homepage-restore-rehearsal.service
+
+[Install]
+WantedBy=timers.target
