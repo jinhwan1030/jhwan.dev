@@ -21,7 +21,7 @@
     "test:db": "node --test tests/admin-auth.test.mjs tests/admin-post-service.test.mjs tests/content-backup.test.mjs tests/database.test.mjs tests/legacy-content-migration.test.mjs tests/markdown-import.test.mjs tests/media-storage.test.mjs",
     "test:runtime": "node --test tests/content-runtime.test.mjs tests/admin-http.test.mjs",
     "test:admin-ui": "node --test tests/admin-ui.test.mjs",
-    "start": "node ./dist/server/entry.mjs",
+    "start": "node ./scripts/start-production-server.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

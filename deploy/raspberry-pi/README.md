@@ -4,6 +4,10 @@
 실행하고 `/blog/` 응답으로 Node 런타임과 SQLite 초기화를 함께 healthcheck합니다. 컨테이너는
 기존 Nginx 이미지와 같은 내부 포트 `80`을 유지해 Raspberry Pi의 기존 Compose와 호환됩니다.
 
+운영 이미지는 `SIGTERM`을 받으면 Astro HTTP 서버를 정상 종료합니다. 단일 컨테이너가 고정된 호스트
+포트 `4321`을 사용하므로 완전한 무중단 교체는 아니지만, Docker의 기본 강제 종료 대기 약 10초를
+피해 이미지 교체 중 프록시 오류 구간을 최소화합니다.
+
 `./data`를 컨테이너의 `/data`에 바인드해 DB와 업로드 파일을 이미지 교체와 분리합니다. 컨테이너
 entrypoint는 `.legacy-migration-complete` 표시가 없을 때만 이미지에 포함된 기존 Markdown과 미디어를
 `/data/jhwan.db`, `/data/uploads`로 이전합니다. 이후 재기동과 이미지 갱신에서는 해당 데이터를

@@ -19,7 +19,7 @@ export async function startRuntimeServer({
   environment = {},
 }) {
   const port = await availablePort();
-  const child = spawn(process.execPath, ['./dist/server/entry.mjs'], {
+  const child = spawn(process.execPath, ['./scripts/start-production-server.mjs'], {
     cwd: path.resolve('.'),
     env: {
       ...process.env,
@@ -50,11 +50,15 @@ export async function startRuntimeServer({
           async stop() {
             if (child.exitCode !== null) return;
             child.kill('SIGTERM');
-            await Promise.race([
-              new Promise((resolve) => child.once('exit', resolve)),
-              new Promise((resolve) => setTimeout(resolve, 3_000)),
+            const graceful = await Promise.race([
+              new Promise((resolve) => child.once('exit', () => resolve(true))),
+              new Promise((resolve) => setTimeout(() => resolve(false), 3_000)),
             ]);
-            if (child.exitCode === null) child.kill('SIGKILL');
+            if (!graceful) {
+              child.kill('SIGKILL');
+              await new Promise((resolve) => child.once('exit', resolve));
+              throw new Error(`Runtime server did not stop gracefully after SIGTERM:\n${output}`);
+            }
           },
         };
       }
