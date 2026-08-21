@@ -48,7 +48,7 @@ jobs:
 
       - name: Raspberry Pi 백업·복구 스크립트 구문 검사
         run: |
-          bash -n deploy/raspberry-pi/backup-homepage.sh deploy/raspberry-pi/restore-homepage.sh
+          bash -n deploy/raspberry-pi/backup-homepage.sh deploy/raspberry-pi/restore-homepage.sh deploy/raspberry-pi/rehearse-homepage-restore.sh
           sh -n deploy/raspberry-pi/container-entrypoint.sh
 
       - name: 홈페이지 빌드 및 초안 비공개 검사

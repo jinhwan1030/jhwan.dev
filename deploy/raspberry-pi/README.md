@@ -54,3 +54,14 @@ Worker에 등록한 값과 같아야 합니다.
 
 실제 복구 전에는 현 데이터를 한 번 더 백업합니다. 복구본이 기동하지 않으면 직전 데이터를 다시
 놓고, 성공하면 보안을 위해 기존 관리자 세션을 모두 폐기합니다.
+
+실제 장애 전에 최신 백업이 기동 가능한지도 다음 명령으로 확인합니다. timestamp를 생략하면 가장
+최근 백업을 사용합니다. 이 리허설은 백업을 `/tmp`의 별도 쓰기 가능한 데이터 디렉터리에 복사하고
+전용 Docker 네트워크 안에서만 임시 컨테이너를 실행합니다. 운영 `/data`, 운영 컨테이너, 호스트
+포트는 건드리지 않습니다. DB 무결성과 미디어 체크섬뿐 아니라 글 목록·상세, RSS, 사이트맵,
+업로드 응답을 확인하고 리허설 동안 관리자 API가 비활성화되어 있는지도 검증합니다.
+
+```bash
+/usr/local/sbin/jhwan-homepage-restore-rehearsal
+/usr/local/sbin/jhwan-homepage-restore-rehearsal --backup YYYYMMDD-HHMMSS
+```

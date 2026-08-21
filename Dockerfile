@@ -18,7 +18,7 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY database ./database
 COPY scripts/lib ./scripts/lib
-COPY scripts/backup-content-database.mjs scripts/invalidate-admin-sessions.mjs scripts/migrate-legacy-content.mjs scripts/verify-content-backup.mjs ./scripts/
+COPY scripts/backup-content-database.mjs scripts/invalidate-admin-sessions.mjs scripts/migrate-legacy-content.mjs scripts/verify-content-backup.mjs scripts/verify-restored-runtime.mjs ./scripts/
 COPY scripts/start-production-server.mjs ./scripts/
 COPY src/lib/server ./src/lib/server
 COPY src/content/blog ./src/content/blog
