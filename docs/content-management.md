@@ -47,6 +47,8 @@ GitHub **Settings → Developer settings → OAuth Apps**의 전용 App은 다�
 ### Cloudflare Worker secret
 
 로컬 최초 설정 파일은 `deploy/cloudflare/cms-oauth/.dev.vars`이며 Git에서 제외됩니다.
+`cms-oauth`는 기존 Cloudflare Worker·GitHub Environment와의 호환을 위해 유지하는 내부
+식별자입니다. 현재 사용자 화면은 자체 Content Studio이며, 저장소 기반 CMS는 사용하지 않습니다.
 
 ```dotenv
 GITHUB_OAUTH_ID="GitHub OAuth App Client ID"

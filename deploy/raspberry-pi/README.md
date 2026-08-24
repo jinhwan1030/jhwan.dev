@@ -77,3 +77,5 @@ sudo journalctl -u jhwan-homepage-restore-rehearsal.service -n 100 --no-pager
 개발 PC는 전용 SSH 키로 최신 검증 백업만 읽어 GPG 대칭키로 암호화합니다. 등록된 키에는
 `restrict`와 강제 명령을 적용해 셸·포트 포워딩을 허용하지 않습니다. 라즈베리의 원본 백업과
 개발 PC의 암호문 중 어느 한쪽만 남아도 복구할 수 있으며 클라우드 서비스는 사용하지 않습니다.
+다만 암호문과 같은 PC에만 있는 passphrase를 잃으면 복원할 수 없으므로, passphrase는
+비밀번호 관리자나 분리한 오프라인 매체에 복구용 사본을 하나 추가로 보관합니다.

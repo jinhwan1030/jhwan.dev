@@ -35,9 +35,10 @@ npm run test:db
 
 ## 기존 콘텐츠와 미디어 이전
 
-현재 기준 이전 대상은 Markdown 게시글 9개(공개 6개, 초안 3개)이며 `src/assets/blog`에 실제
-업로드 이미지는 없습니다. 이미지가 0개인 상태도 정상적인 이전 결과입니다. 이후 기존 CMS에서
-이미지가 추가되더라도 같은 명령이 파일을 검사하고 함께 이전합니다.
+현재 저장소의 `src/content/blog`은 최초 DB 이전에만 사용하는 Markdown seed입니다.
+`src/assets/blog`에 실제 업로드 이미지가 없어도 정상적인 이전 결과입니다. 과거 저장소 기반
+관리 단계에서 만든 seed에 이미지가 포함된 경우에도 같은 명령이 파일을 검사하고 함께
+이전합니다. 운영 게시의 원본은 Markdown이 아니라 영속 SQLite입니다.
 
 ```bash
 npm run db:migrate-legacy
@@ -100,8 +101,9 @@ npm run db:import -- --apply --database .data/jhwan.db
 - 게시글 소프트 삭제와 복구, 전체 수정 이력
 - slug 변경 전 주소 보존 및 재사용 차단
 
-Cloudflare Worker는 GitHub access token으로 숫자 사용자 ID를 확인한 뒤 토큰을 폐기하고, 브라우저
-URL fragment에는 2분짜리 HS256 일회성 로그인 티켓만 전달합니다. 홈페이지 서버는 티켓을 한 번만
+Cloudflare Worker는 GitHub access token으로 숫자 사용자 ID를 확인하고 요청 처리 후 보관하지
+않습니다. 토큰은 Worker 밖이나 브라우저로 전달하지 않고, 브라우저 URL fragment에는
+2분짜리 HS256 일회성 로그인 티켓만 전달합니다. 홈페이지 서버는 티켓을 한 번만
 교환해 8시간짜리 불투명 세션을 만들며 원문 세션·CSRF 토큰 대신 SHA-256 해시만 DB에 저장합니다.
 
 ## 운영 관리자 화면

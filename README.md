@@ -22,7 +22,7 @@ src/
 ├── assets/           # 이미지, 폰트
 ├── components/       # 공통 컴포넌트 (Header, Footer 등)
 ├── content/
-│   └── blog/         # 블로그 포스트 (.md)
+│   └── blog/         # 최초 DB 이전용 Markdown seed
 ├── layouts/
 │   └── BlogPost.astro
 ├── pages/
