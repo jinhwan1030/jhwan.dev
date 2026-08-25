@@ -82,6 +82,7 @@ test('verifies an isolated restored runtime without exposing the administrator A
     const parsed = new URL(url);
     requests.push({ path: parsed.pathname, method: options.method ?? 'GET' });
     switch (parsed.pathname) {
+      case '/api/health': return Response.json({ status: 'ok' });
       case '/': return new Response('home');
       case '/blog/': return new Response('<a href="/blog/restored-post/">복원 글</a>');
       case '/blog/restored-post/': return new Response('<article>복원 글</article>');
@@ -113,6 +114,7 @@ test('verifies an isolated restored runtime without exposing the administrator A
     adminApiDisabled: true,
   });
   assert.equal(result.backup.counts.posts, 2);
+  assert.ok(requests.some((request) => request.path === '/api/health'));
   assert.ok(requests.some((request) => request.path === '/blog/restored-post/'));
   assert.ok(requests.some(
     (request) => request.path === `/uploads/${fixture.storageKey}` && request.method === 'HEAD',

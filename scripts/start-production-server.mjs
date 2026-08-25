@@ -6,6 +6,7 @@ import {
   MAX_REQUEST_BODY_BYTES,
   SECURITY_HEADERS,
 } from '../src/lib/server/security-headers.js';
+import { closeContentRuntime } from '../src/lib/server/content-runtime.js';
 
 process.env.ASTRO_NODE_AUTOSTART = 'disabled';
 
@@ -71,3 +72,4 @@ process.once('SIGTERM', () => { void stop('SIGTERM'); });
 process.once('SIGINT', () => { void stop('SIGINT'); });
 
 await done;
+closeContentRuntime();

@@ -9,7 +9,7 @@ LOCK_FILE="${JHWAN_HOMEPAGE_BACKUP_LOCK:-/run/lock/jhwan-homepage-backup.lock}"
 UPDATE_LOCK_FILE="${JHWAN_AUTO_UPDATE_LOCK_FILE:-/run/lock/jhwan-auto-update.lock}"
 CONTAINER_NAME="${JHWAN_HOMEPAGE_CONTAINER:-jhwan-homepage}"
 BACKUP_COMMAND="${JHWAN_HOMEPAGE_BACKUP_COMMAND:-/usr/local/sbin/jhwan-homepage-backup}"
-HEALTH_URL="${JHWAN_HOMEPAGE_HEALTH_URL:-http://127.0.0.1:4321/blog/}"
+HEALTH_URL="${JHWAN_HOMEPAGE_HEALTH_URL:-http://127.0.0.1:4321/api/health}"
 APPLY=false
 BACKUP_STAMP=""
 

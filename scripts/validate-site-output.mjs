@@ -76,6 +76,31 @@ try {
     if (!response.ok) errors.push(`${endpoint}: HTTP ${response.status}`);
   }
 
+  const health = await fetch(`${server.origin}/api/health`);
+  const healthBody = await health.json().catch(() => null);
+  if (health.status !== 200 || healthBody?.status !== 'ok') {
+    errors.push(`/api/health: invalid readiness response (${health.status})`);
+  }
+  if (health.headers.get('cache-control') !== 'no-store') {
+    errors.push('/api/health: missing no-store cache policy');
+  }
+  for (const [header, expected] of Object.entries(SECURITY_HEADERS)) {
+    if (health.headers.get(header) !== expected) {
+      errors.push(`/api/health: invalid security header ${header}`);
+    }
+  }
+  const healthHead = await fetch(`${server.origin}/api/health`, { method: 'HEAD' });
+  if (healthHead.status !== 200 || (await healthHead.text()) !== '') {
+    errors.push(`/api/health: invalid HEAD response (${healthHead.status})`);
+  }
+  const healthPost = await fetch(`${server.origin}/api/health`, {
+    method: 'POST',
+    headers: { Origin: server.origin },
+  });
+  if (healthPost.status !== 405 || healthPost.headers.get('allow') !== 'GET, HEAD') {
+    errors.push(`/api/health: invalid method boundary (${healthPost.status})`);
+  }
+
   if (errors.length > 0) throw new Error(`Runtime site validation failed:\n${errors.join('\n')}`);
   console.log(
     `Runtime site validation passed (${pages.length} HTML responses, ${checkedReferences.size} internal references)`,

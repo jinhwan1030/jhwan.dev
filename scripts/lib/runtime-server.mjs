@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 
@@ -19,6 +20,8 @@ export async function startRuntimeServer({
   environment = {},
 }) {
   const port = await availablePort();
+  const mediaPath = path.resolve(path.dirname(databasePath), 'uploads');
+  fs.mkdirSync(mediaPath, { recursive: true });
   const child = spawn(process.execPath, ['./scripts/start-production-server.mjs'], {
     cwd: path.resolve('.'),
     env: {
@@ -27,7 +30,7 @@ export async function startRuntimeServer({
       PORT: String(port),
       JHWAN_ADMIN_ENABLED: 'false',
       JHWAN_DATABASE_PATH: path.resolve(databasePath),
-      JHWAN_MEDIA_PATH: path.resolve(path.dirname(databasePath), 'uploads'),
+      JHWAN_MEDIA_PATH: mediaPath,
       JHWAN_CONTENT_SEED_PATH: path.resolve(contentDirectory),
       ...environment,
     },
@@ -42,7 +45,7 @@ export async function startRuntimeServer({
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw new Error(`Runtime server exited early:\n${output}`);
     try {
-      const response = await fetch(`${origin}/blog/`);
+      const response = await fetch(`${origin}/api/health`);
       if (response.ok) {
         return {
           origin,

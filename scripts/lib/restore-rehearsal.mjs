@@ -41,8 +41,9 @@ async function waitUntilReady(fetchImpl, origin, timeoutMilliseconds) {
   let lastError;
   while (Date.now() < deadline) {
     try {
-      const response = await fetchResponse(fetchImpl, `${origin}/blog/`);
-      return await response.text();
+      const response = await fetchResponse(fetchImpl, `${origin}/api/health`);
+      await response.body?.cancel();
+      return;
     } catch (error) {
       lastError = error;
       await new Promise((resolve) => setTimeout(resolve, 250));
@@ -67,7 +68,8 @@ export async function verifyRestoredRuntime({
   const backup = verifyContentBackup({ databasePath, mediaRoot });
   const snapshot = publicSnapshot(databasePath, now);
 
-  const blog = await waitUntilReady(fetchImpl, base, readyTimeoutMilliseconds);
+  await waitUntilReady(fetchImpl, base, readyTimeoutMilliseconds);
+  const blog = await (await fetchResponse(fetchImpl, `${base}/blog/`)).text();
   const homeResponse = await fetchResponse(fetchImpl, `${base}/`);
   await homeResponse.body?.cancel();
   const rss = await (await fetchResponse(fetchImpl, `${base}/rss.xml`)).text();

@@ -1,7 +1,8 @@
 # jhwan.dev Raspberry Pi runtime
 
 `compose.yml`은 `legyeseul/jhwan-homepage:latest`의 Astro Node 서버를 호스트 포트 `4321`에서
-실행하고 `/blog/` 응답으로 Node 런타임과 SQLite 초기화를 함께 healthcheck합니다. 컨테이너는
+실행하고 `/api/health` 응답으로 Node 런타임, SQLite 스키마, 업로드 저장소의 읽기·쓰기 가능 여부를
+함께 healthcheck합니다. 공개 응답은 상태만 제공하고 내부 경로나 오류 상세는 노출하지 않습니다. 컨테이너는
 기존 Nginx 이미지와 같은 내부 포트 `80`을 유지해 Raspberry Pi의 기존 Compose와 호환됩니다.
 
 운영 이미지는 `SIGTERM`을 받으면 Astro HTTP 서버를 정상 종료합니다. 단일 컨테이너가 고정된 호스트
@@ -17,6 +18,16 @@ entrypoint는 `.legacy-migration-complete` 표시가 없을 때만 이미지에 
 
 ```text
 /home/jinhwan/projects/jhwan-homepage/compose.yml
+```
+
+운영 상태와 실패 원인은 다음 명령으로 확인합니다. 첫 명령이 실패하면 컨테이너 상태와 로그를 차례로
+확인하며, 상태 API 응답은 캐시하지 않습니다.
+
+```bash
+curl --fail --silent --show-error http://127.0.0.1:4321/api/health
+docker inspect --format '{{.State.Status}}/{{if .State.Health}}{{.State.Health.Status}}{{end}}' jhwan-homepage
+docker logs --tail 100 jhwan-homepage
+sudo journalctl -u jhwan-auto-update.service -n 100 --no-pager
 ```
 
 공통 자동 업데이터는 BabyWeather 저장소의
