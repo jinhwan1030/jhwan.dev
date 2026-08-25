@@ -260,12 +260,19 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         transform: translateY(-3px);
       }
 
+      .project-card-hover:focus-within {
+        border-color: #93c5fd;
+        box-shadow: 0 8px 30px rgba(37,99,235,0.09);
+        transform: translateY(-3px);
+      }
+
       .project-card-content {
         padding: 1.75rem;
         transition: filter 0.25s, opacity 0.25s;
       }
 
-      .project-card-hover:hover .project-card-content {
+      .project-card-hover:hover .project-card-content,
+      .project-card-hover:focus-within .project-card-content {
         filter: blur(1px);
         opacity: 0.35;
       }
@@ -283,7 +290,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         padding: 1.75rem;
       }
 
-      .project-card-hover:hover .project-overlay {
+      .project-card-hover:hover .project-overlay,
+      .project-card-hover:focus-within .project-overlay {
         opacity: 1;
       }
 
@@ -490,7 +498,8 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
           padding: 0 0.95rem 0.95rem;
           gap: 0.6rem;
         }
-        .project-card-hover:hover .project-card-content {
+        .project-card-hover:hover .project-card-content,
+        .project-card-hover:focus-within .project-card-content {
           filter: none;
           opacity: 1;
         }
@@ -501,7 +510,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
   <body>
     <Header />
 
-    <main>
+    <main id="main-content" tabindex="-1">
       <section class="hero">
         <p class="hero-eyebrow">jhwan.dev</p>
         <h1 class="hero-name">작은 서비스를<br />만들고 운영합니다.</h1>

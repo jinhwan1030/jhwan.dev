@@ -111,6 +111,33 @@ a:hover {
 	color: var(--color-accent-strong);
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+	outline: 3px solid rgb(37 99 235 / 35%);
+	outline-offset: 3px;
+}
+
+.skip-link {
+	position: fixed;
+	top: 0.5rem;
+	left: 0.5rem;
+	z-index: 100;
+	padding: 0.65rem 0.9rem;
+	border-radius: var(--radius-sm);
+	background: var(--color-ink);
+	color: white;
+	text-decoration: none;
+	transform: translateY(calc(-100% - 1rem));
+}
+
+.skip-link:focus {
+	color: white;
+	transform: translateY(0);
+}
+
 textarea,
 input,
 button,
@@ -194,6 +221,20 @@ hr {
 	clip: rect(1px, 1px, 1px, 1px);
 	clip-path: inset(50%);
 	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
 }
 
 @media (max-width: 720px) {

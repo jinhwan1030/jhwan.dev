@@ -14,6 +14,7 @@ interface Props {
 	ogType?: 'website' | 'article';
 	publishedTime?: Date;
 	modifiedTime?: Date;
+	noindex?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -26,6 +27,7 @@ const {
 	ogType = 'website',
 	publishedTime,
 	modifiedTime,
+	noindex = false,
 } = Astro.props;
 const imageURL = new URL(typeof image === 'string' ? image : image.src, Astro.site ?? Astro.url);
 ---
@@ -52,6 +54,7 @@ const imageURL = new URL(typeof image === 'string' ? image : image.src, Astro.si
 <title>{title}</title>
 <meta name="title" content={title} />
 <meta name="description" content={description} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={ogType} />
@@ -74,9 +77,9 @@ const imageURL = new URL(typeof image === 'string' ? image : image.src, Astro.si
 }
 
 <!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:url" content={canonicalURL} />
-<meta property="twitter:title" content={title} />
-<meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={imageURL} />
-<meta property="twitter:image:alt" content={imageAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content={canonicalURL} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageURL} />
+<meta name="twitter:image:alt" content={imageAlt} />

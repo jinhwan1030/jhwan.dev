@@ -28,6 +28,12 @@ try {
     if (!source.includes(`<link rel="canonical" href="${canonical}">`)) {
       errors.push(`${pathname}: missing canonical URL`);
     }
+    if (!source.includes('href="#main-content"') || !source.includes('id="main-content"')) {
+      errors.push(`${pathname}: missing public skip-link target`);
+    }
+    if (!source.includes('<meta name="twitter:card" content="summary_large_image">')) {
+      errors.push(`${pathname}: missing Twitter card metadata`);
+    }
     if (pathname.startsWith('/blog/') && pathname !== '/blog/') {
       for (const metadata of [
         '<meta property="og:type" content="article">',
@@ -47,6 +53,16 @@ try {
       const linked = await fetch(`${server.origin}${referencePath}`);
       if (!linked.ok) errors.push(`${pathname}: broken internal reference ${referencePath} (${linked.status})`);
     }
+  }
+
+  const notFound = await fetch(`${server.origin}/blog/__missing-accessibility-check__/`);
+  const notFoundSource = await notFound.text();
+  if (notFound.status !== 404) errors.push(`/blog/__missing-accessibility-check__/: expected HTTP 404`);
+  if (!notFoundSource.includes('<meta name="robots" content="noindex, nofollow">')) {
+    errors.push(`/blog/__missing-accessibility-check__/: missing noindex metadata`);
+  }
+  if (!notFoundSource.includes('href="#main-content"') || !notFoundSource.includes('id="main-content"')) {
+    errors.push(`/blog/__missing-accessibility-check__/: missing public skip-link target`);
   }
 
   for (const endpoint of ['/rss.xml', '/sitemap.xml']) {

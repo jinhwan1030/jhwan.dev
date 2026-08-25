@@ -87,7 +87,8 @@ const posts = getContentRuntime().repository.listPublished() as PublicPost[];
         display: block;
       }
 
-      .card:hover {
+      .card:hover,
+      .card:focus-visible {
         border-color: var(--color-line);
         box-shadow: var(--shadow-soft);
         transform: translateY(-3px);
@@ -193,7 +194,7 @@ const posts = getContentRuntime().repository.listPublished() as PublicPost[];
   </head>
   <body>
     <Header />
-    <main>
+    <main id="main-content" tabindex="-1">
       <p class="page-label">Blog</p>
       <h1 class="page-title">글 목록</h1>
       <div class="cards">

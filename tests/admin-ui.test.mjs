@@ -10,6 +10,7 @@ const projectUrl = new URL('../', import.meta.url);
 
 test('admin shell keeps the post list visible before the editor and avoids remote assets', async () => {
   const html = await readFile(new URL('admin/index.html', projectUrl), 'utf8');
+  const mainSource = await readFile(new URL('admin/src/main.js', projectUrl), 'utf8');
 
   assert.match(html, /<meta name="robots" content="noindex, nofollow, noarchive"/);
   assert.ok(html.indexOf('id="post-sidebar"') < html.indexOf('id="post-title"'));
@@ -23,6 +24,14 @@ test('admin shell keeps the post list visible before the editor and avoids remot
   assert.match(html, /id="image-file"/);
   assert.doesNotMatch(html, /<(?:script|link)\b[^>]+(?:src|href)="https?:\/\//);
   assert.match(html, /href="https:\/\/auth\.jhwan\.dev\/admin\/auth"/);
+  assert.match(html, /class="brand" href="\/admin\/"/);
+  assert.match(html, /id="status-filters" role="group"/);
+  assert.match(html, /id="visual-tab"[^>]+aria-controls="visual-pane"[^>]+tabindex="0"/);
+  assert.match(html, /id="markdown-tab"[^>]+aria-controls="markdown-pane"[^>]+tabindex="-1"/);
+  assert.match(html, /id="visual-pane" role="tabpanel" aria-labelledby="visual-tab"/);
+  assert.match(mainSource, /event\.key === 'ArrowRight'/);
+  assert.match(mainSource, /event\.key === 'ArrowLeft'/);
+  assert.match(mainSource, /tab\.tabIndex = active \? 0 : -1/);
 });
 
 test('demo API supports create, update, soft delete, restore, and revision history', async () => {

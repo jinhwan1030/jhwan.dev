@@ -21,7 +21,7 @@
         <button class="icon-button mobile-only" id="sidebar-toggle" type="button" aria-label="글 목록 열기">
           <span aria-hidden="true">☰</span>
         </button>
-        <a class="brand" href="#" aria-label="jhwan.dev 관리자 홈">
+        <a class="brand" href="/admin/" aria-label="jhwan.dev 관리자 홈">
           <span class="brand-mark" aria-hidden="true">J</span>
           <span>
             <strong>jhwan.dev</strong>
@@ -65,11 +65,11 @@
             <span aria-hidden="true">⌕</span>
             <input id="post-search" type="search" placeholder="제목이나 주소 검색" autocomplete="off" />
           </label>
-          <div class="filter-tabs" id="status-filters" role="tablist" aria-label="게시 상태 필터">
-            <button class="is-active" type="button" role="tab" data-filter="all" aria-selected="true">전체</button>
-            <button type="button" role="tab" data-filter="draft" aria-selected="false">초안</button>
-            <button type="button" role="tab" data-filter="published" aria-selected="false">공개</button>
-            <button type="button" role="tab" data-filter="deleted" aria-selected="false">휴지통</button>
+          <div class="filter-tabs" id="status-filters" role="group" aria-label="게시 상태 필터">
+            <button class="is-active" type="button" data-filter="all" aria-pressed="true">전체</button>
+            <button type="button" data-filter="draft" aria-pressed="false">초안</button>
+            <button type="button" data-filter="published" aria-pressed="false">공개</button>
+            <button type="button" data-filter="deleted" aria-pressed="false">휴지통</button>
           </div>
         </div>
 
@@ -115,19 +115,19 @@
           </div>
 
           <div class="editor-mode-tabs" role="tablist" aria-label="편집 방식">
-            <button class="is-active" type="button" role="tab" data-mode="visual" aria-selected="true">
+            <button class="is-active" id="visual-tab" type="button" role="tab" data-mode="visual" aria-selected="true" aria-controls="visual-pane" tabindex="0">
               편집
             </button>
-            <button type="button" role="tab" data-mode="markdown" aria-selected="false">
+            <button id="markdown-tab" type="button" role="tab" data-mode="markdown" aria-selected="false" aria-controls="markdown-pane" tabindex="-1">
               Markdown
             </button>
-            <button type="button" role="tab" data-mode="preview" aria-selected="false">
+            <button id="preview-tab" type="button" role="tab" data-mode="preview" aria-selected="false" aria-controls="preview-pane" tabindex="-1">
               미리보기
             </button>
           </div>
 
           <div class="editor-frame">
-            <div class="editor-pane" id="visual-pane" role="tabpanel">
+            <div class="editor-pane" id="visual-pane" role="tabpanel" aria-labelledby="visual-tab" tabindex="0">
               <div class="format-toolbar" id="format-toolbar" aria-label="본문 서식">
                 <div class="toolbar-group">
                   <button type="button" data-command="undo" aria-label="실행 취소" title="실행 취소">↶</button>
@@ -160,7 +160,7 @@
               <div id="rich-editor"></div>
             </div>
 
-            <div class="editor-pane markdown-pane" id="markdown-pane" role="tabpanel" hidden>
+            <div class="editor-pane markdown-pane" id="markdown-pane" role="tabpanel" aria-labelledby="markdown-tab" tabindex="0" hidden>
               <div class="source-notice">
                 <strong>Markdown 원문</strong>
                 <span>표·코드 블록처럼 세밀한 문법을 직접 다듬을 때 사용하세요.</span>
@@ -168,7 +168,7 @@
               <textarea id="markdown-source" aria-label="Markdown 원문 편집기" spellcheck="false"></textarea>
             </div>
 
-            <div class="editor-pane preview-pane" id="preview-pane" role="tabpanel" hidden>
+            <div class="editor-pane preview-pane" id="preview-pane" role="tabpanel" aria-labelledby="preview-tab" tabindex="0" hidden>
               <div class="preview-browser-bar" aria-hidden="true">
                 <span></span><span></span><span></span>
                 <div id="preview-url">jhwan.dev/blog/</div>

@@ -549,6 +549,7 @@ function switchMode(nextMode) {
     const active = tab.dataset.mode === nextMode;
     tab.classList.toggle('is-active', active);
     tab.setAttribute('aria-selected', String(active));
+    tab.tabIndex = active ? 0 : -1;
   }
   if (nextMode === 'preview') updatePreview();
 }
@@ -602,7 +603,7 @@ elements.filters.addEventListener('click', (event) => {
   for (const tab of elements.filters.querySelectorAll('[data-filter]')) {
     const active = tab === button;
     tab.classList.toggle('is-active', active);
-    tab.setAttribute('aria-selected', String(active));
+    tab.setAttribute('aria-pressed', String(active));
   }
   renderPostList();
 });
@@ -631,7 +632,22 @@ elements.sidebarScrim.addEventListener('click', () => elements.body.classList.re
 elements.settingsToggle.addEventListener('click', () => elements.body.classList.add('settings-open'));
 elements.settingsClose.addEventListener('click', () => elements.body.classList.remove('settings-open'));
 
-for (const tab of elements.modeTabs) tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+for (const tab of elements.modeTabs) {
+  tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+  tab.addEventListener('keydown', (event) => {
+    const currentIndex = elements.modeTabs.indexOf(tab);
+    let nextIndex;
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % elements.modeTabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + elements.modeTabs.length) % elements.modeTabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = elements.modeTabs.length - 1;
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    const nextTab = elements.modeTabs[nextIndex];
+    switchMode(nextTab.dataset.mode);
+    nextTab.focus();
+  });
+}
 
 elements.toolbar.addEventListener('click', (event) => {
   const button = event.target.closest('[data-command]');
