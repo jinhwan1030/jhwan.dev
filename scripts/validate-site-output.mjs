@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import { SECURITY_HEADERS } from '../src/lib/server/security-headers.js';
 import { loadMarkdownPosts } from './lib/markdown-posts.mjs';
 import { startRuntimeServer } from './lib/runtime-server.mjs';
 
@@ -24,6 +25,11 @@ try {
       continue;
     }
     const source = await response.text();
+    for (const [header, expected] of Object.entries(SECURITY_HEADERS)) {
+      if (response.headers.get(header) !== expected) {
+        errors.push(`${pathname}: invalid security header ${header}`);
+      }
+    }
     const canonical = new URL(pathname, siteOrigin).href;
     if (!source.includes(`<link rel="canonical" href="${canonical}">`)) {
       errors.push(`${pathname}: missing canonical URL`);

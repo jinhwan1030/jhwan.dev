@@ -48,17 +48,19 @@ export function requireAdminEnabled() {
 }
 
 export function parseCookies(header) {
-  return Object.fromEntries(
-    (header ?? '')
-      .split(';')
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const separator = part.indexOf('=');
-        if (separator === -1) return [part, ''];
-        return [part.slice(0, separator), decodeURIComponent(part.slice(separator + 1))];
-      }),
-  );
+  const cookies = Object.create(null);
+  for (const source of (header ?? '').split(';')) {
+    const part = source.trim();
+    const separator = part.indexOf('=');
+    if (!part || separator <= 0) continue;
+    try {
+      cookies[part.slice(0, separator)] = decodeURIComponent(part.slice(separator + 1));
+    } catch {
+      // Ignore malformed client-controlled cookie values instead of turning an
+      // unauthenticated request into a server error.
+    }
+  }
+  return cookies;
 }
 
 export function adminContext(request) {

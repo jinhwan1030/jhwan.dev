@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import { signAdminLoginTicket } from '../src/lib/server/admin-auth.js';
+import { parseCookies } from '../src/lib/server/admin-http.js';
 import { closeAdminRuntime } from '../src/lib/server/admin-runtime.js';
 import { closeContentRuntime, getContentRuntime } from '../src/lib/server/content-runtime.js';
 import * as postRoute from '../src/pages/api/admin/posts/[id].js';
@@ -13,6 +14,14 @@ import * as postsRoute from '../src/pages/api/admin/posts/index.js';
 import * as sessionRoute from '../src/pages/api/admin/session.js';
 
 const SECRET = 'runtime-admin-ticket-secret-at-least-32-bytes';
+
+test('cookie parser ignores malformed client-controlled values', () => {
+  const cookies = parseCookies('valid=value; encoded=hello%20world; malformed=%E0%A4%A; flag');
+  assert.equal(cookies.valid, 'value');
+  assert.equal(cookies.encoded, 'hello world');
+  assert.equal(cookies.malformed, undefined);
+  assert.equal(cookies.flag, undefined);
+});
 
 function jsonRequest(url, method, body, cookie, csrfToken) {
   return new Request(url, {

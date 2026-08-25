@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import { signAdminLoginTicket } from '../src/lib/server/admin-auth.js';
+import { SECURITY_HEADERS } from '../src/lib/server/security-headers.js';
 import { startRuntimeServer } from './lib/runtime-server.mjs';
 
 const secret = 'runtime-http-ticket-secret-at-least-32-bytes';
@@ -46,6 +47,11 @@ try {
   if (!adminResponse.ok || !adminHtml.includes('<title>jhwan.dev Content Studio</title>')) {
     throw new Error('The production Content Studio was not served from /admin/');
   }
+  for (const [header, expected] of Object.entries(SECURITY_HEADERS)) {
+    if (adminResponse.headers.get(header) !== expected) {
+      throw new Error(`The production Content Studio security header is invalid: ${header}`);
+    }
+  }
   if (adminHtml.includes('sveltia-cms') || adminHtml.includes('config.yml')) {
     throw new Error('The legacy CMS was present in the production /admin/ response');
   }
@@ -62,6 +68,13 @@ try {
 
   const anonymous = await jsonRequest('/api/admin/session');
   if (anonymous.response.status !== 401) throw new Error('Anonymous session request must be rejected');
+  const malformedCookieResponse = await fetch(`${server.origin}/api/admin/session`, {
+    headers: { Cookie: '__Host-jhwan_admin_session=%E0%A4%A' },
+  });
+  const malformedCookiePayload = await malformedCookieResponse.json();
+  if (malformedCookieResponse.status !== 401 || malformedCookiePayload.error?.code !== 'session_required') {
+    throw new Error('Malformed client cookies must be ignored and rejected as an anonymous session');
+  }
 
   const now = Math.floor(Date.now() / 1_000);
   const ticket = signAdminLoginTicket({
