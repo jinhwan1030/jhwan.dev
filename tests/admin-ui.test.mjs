@@ -19,11 +19,14 @@ test('admin shell keeps the post list visible before the editor and avoids remot
   assert.match(html, /id="markdown-source"/);
   assert.match(html, /id="article-preview"/);
   assert.match(html, /id="save-post"/);
+  assert.match(html, /id="save-post"[^>]+disabled/);
   assert.match(html, /id="insert-image"/);
   assert.match(html, /id="upload-image"/);
   assert.match(html, /id="image-file"/);
   assert.doesNotMatch(html, /<(?:script|link)\b[^>]+(?:src|href)="https?:\/\//);
   assert.match(html, /href="https:\/\/auth\.jhwan\.dev\/admin\/auth"/);
+  assert.match(html, /id="auth-screen" aria-labelledby="auth-title">/);
+  assert.match(html, /id="auth-login"[^>]+hidden/);
   assert.match(html, /class="brand" href="\/admin\/"/);
   assert.match(html, /id="status-filters" role="group"/);
   assert.match(html, /id="visual-tab"[^>]+aria-controls="visual-pane"[^>]+tabindex="0"/);
@@ -32,6 +35,8 @@ test('admin shell keeps the post list visible before the editor and avoids remot
   assert.match(mainSource, /event\.key === 'ArrowRight'/);
   assert.match(mainSource, /event\.key === 'ArrowLeft'/);
   assert.match(mainSource, /tab\.tabIndex = active \? 0 : -1/);
+  assert.doesNotMatch(mainSource, /^import .*\.\/editor\.js/m);
+  assert.match(mainSource, /await import\('\.\/editor\.js'\)/);
 });
 
 test('demo API supports create, update, soft delete, restore, and revision history', async () => {

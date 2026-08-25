@@ -1,15 +1,12 @@
-import { createDemoAdminApi } from './demo-api.js';
 import { createHttpAdminApi } from './http-api.js';
-import {
-  createMarkdownEditor,
-  insertEditorImage,
-  isCommandActive,
-  runEditorCommand,
-  setMarkdown,
-} from './editor.js';
 
 const demoMode = new URLSearchParams(window.location.search).get('demo') === '1';
-const api = demoMode ? createDemoAdminApi() : createHttpAdminApi();
+let api = demoMode ? null : createHttpAdminApi();
+let editor;
+let insertEditorImage;
+let isCommandActive;
+let runEditorCommand;
+let setMarkdown;
 const elements = {
   body: document.body,
   sidebar: document.querySelector('#post-sidebar'),
@@ -55,6 +52,7 @@ const elements = {
   toast: document.querySelector('#toast'),
   authScreen: document.querySelector('#auth-screen'),
   authMessage: document.querySelector('#auth-message'),
+  authLogin: document.querySelector('#auth-login'),
   environmentBadge: document.querySelector('#environment-badge'),
   adminAccount: document.querySelector('#admin-account'),
   logout: document.querySelector('#logout'),
@@ -81,15 +79,20 @@ const state = {
   uploadTarget: 'hero',
 };
 
-const editor = createMarkdownEditor({
-  element: elements.editorElement,
-  onChange: (markdown) => {
-    if (state.loadingDocument) return;
-    elements.markdownSource.value = markdown;
-    markDirty();
-    updateWordCount(markdown);
-  },
-});
+async function initializeEditor() {
+  if (editor) return;
+  const editorModule = await import('./editor.js');
+  ({ insertEditorImage, isCommandActive, runEditorCommand, setMarkdown } = editorModule);
+  editor = editorModule.createMarkdownEditor({
+    element: elements.editorElement,
+    onChange: (markdown) => {
+      if (state.loadingDocument) return;
+      elements.markdownSource.value = markdown;
+      markDirty();
+      updateWordCount(markdown);
+    },
+  });
+}
 
 function escapeHtml(value = '') {
   return String(value)
@@ -159,6 +162,7 @@ function showLogin(error) {
     ? '영구 저장소 설정이 끝난 뒤 관리자 기능이 활성화됩니다.'
     : (error?.message || 'GitHub 계정으로 본인 확인 후 글을 관리할 수 있습니다.');
   elements.authScreen.hidden = false;
+  elements.authLogin.hidden = false;
 }
 
 function recoveryKey() {
@@ -696,19 +700,31 @@ window.addEventListener('beforeunload', (event) => {
 
 async function initialize() {
   if (demoMode) {
+    const { createDemoAdminApi } = await import('./demo-api.js');
+    api = createDemoAdminApi();
     elements.environmentBadge.textContent = '데모 데이터';
     elements.logout.hidden = true;
+    elements.authMessage.textContent = '데모 편집기를 준비하고 있습니다.';
   } else {
     try {
       await api.exchangeLoginTicketFromHash();
       const session = await api.getSession();
       elements.adminAccount.textContent = `@${session.githubLogin}`;
-      elements.authScreen.hidden = true;
+      elements.authMessage.textContent = '편집기를 준비하고 있습니다.';
     } catch (error) {
       showLogin(error);
       return;
     }
   }
+  try {
+    await initializeEditor();
+  } catch {
+    setSaveState('error', '편집기 로드 실패');
+    elements.authMessage.textContent = '편집기를 불러오지 못했습니다. 페이지를 새로고침해주세요.';
+    return;
+  }
+  elements.saveButton.disabled = false;
+  elements.authScreen.hidden = true;
   await loadPosts({ preserveSelection: false });
   const firstActive = state.posts.find((post) => !post.deletedAt) ?? state.posts[0];
   if (firstActive) populateDocument(firstActive);

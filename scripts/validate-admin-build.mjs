@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const adminRoot = path.resolve('dist/client/admin');
+const clientRoot = path.resolve('dist/client');
 const indexPath = path.join(adminRoot, 'index.html');
 const index = fs.readFileSync(indexPath, 'utf8');
 const errors = [];
@@ -23,20 +24,39 @@ for (const requiredSecretPattern of ['**/.dev.vars', '**/.env']) {
     errors.push(`secret files are not excluded from the Docker build context: ${requiredSecretPattern}`);
   }
 }
-if (!/<script[^>]+src="\.\/assets\/[^"?]+\.js"/.test(index)) {
+if (!/<script[^>]+src="\/_astro\/admin\/[^"?]+\.js"/.test(index)) {
   errors.push('bundled administrator JavaScript is missing');
 }
-if (!/<link[^>]+href="\.\/assets\/[^"?]+\.css"/.test(index)) {
+if (!/<link[^>]+href="\/_astro\/admin\/[^"?]+\.css"/.test(index)) {
   errors.push('bundled administrator stylesheet is missing');
 }
 
 for (const match of index.matchAll(/(?:src|href)="([^"]+)"/g)) {
   const reference = match[1];
-  if (!reference.startsWith('./')) continue;
-  const target = path.resolve(adminRoot, reference.slice(2));
-  if (!target.startsWith(`${adminRoot}${path.sep}`) || !fs.existsSync(target)) {
+  if (!reference.startsWith('/_astro/admin/')) continue;
+  const target = path.resolve(clientRoot, reference.slice(1));
+  if (!target.startsWith(`${clientRoot}${path.sep}`) || !fs.existsSync(target)) {
     errors.push(`broken administrator asset: ${reference}`);
   }
+}
+
+const entryReference = index.match(/<script[^>]+src="(\/_astro\/admin\/[^"?]+\.js)"/)?.[1];
+if (entryReference) {
+  const entryPath = path.resolve(clientRoot, entryReference.slice(1));
+  const entrySize = fs.statSync(entryPath).size;
+  if (entrySize > 100_000) {
+    errors.push(`administrator entry JavaScript eagerly loads too much code: ${entrySize} bytes`);
+  }
+}
+if (index.includes('modulepreload')) {
+  errors.push('deferred administrator modules are being preloaded before authentication');
+}
+
+const adminAssetRoot = path.resolve(clientRoot, '_astro/admin');
+for (const entry of fs.readdirSync(adminAssetRoot, { withFileTypes: true })) {
+  if (!entry.isFile() || !entry.name.endsWith('.js')) continue;
+  const size = fs.statSync(path.join(adminAssetRoot, entry.name)).size;
+  if (size > 550_000) errors.push(`administrator deferred JavaScript exceeds 550 KB: ${entry.name} (${size} bytes)`);
 }
 
 if (errors.length > 0) throw new Error(`Administrator production build validation failed:\n${errors.join('\n')}`);

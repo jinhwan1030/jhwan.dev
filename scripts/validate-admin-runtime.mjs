@@ -49,12 +49,15 @@ try {
   if (adminHtml.includes('sveltia-cms') || adminHtml.includes('config.yml')) {
     throw new Error('The legacy CMS was present in the production /admin/ response');
   }
-  const adminAssets = [...adminHtml.matchAll(/(?:src|href)="(\.\/assets\/[^"]+)"/g)]
+  const adminAssets = [...adminHtml.matchAll(/(?:src|href)="(\/_astro\/admin\/[^"]+)"/g)]
     .map((match) => match[1]);
   if (adminAssets.length < 2) throw new Error('The production Content Studio assets were missing');
   for (const asset of adminAssets) {
     const assetResponse = await fetch(new URL(asset, `${server.origin}/admin/`));
     if (!assetResponse.ok) throw new Error(`The Content Studio asset was unavailable: ${asset}`);
+    if (!assetResponse.headers.get('cache-control')?.includes('immutable')) {
+      throw new Error(`The Content Studio hashed asset is not immutable: ${asset}`);
+    }
   }
 
   const anonymous = await jsonRequest('/api/admin/session');

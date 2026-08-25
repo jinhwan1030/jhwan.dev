@@ -40,7 +40,7 @@
         <span class="admin-account" id="admin-account"></span>
         <button class="button button-ghost" id="logout" type="button">로그아웃</button>
         <button class="button button-ghost" id="open-history" type="button">수정 이력</button>
-        <button class="button button-primary" id="save-post" type="button">
+        <button class="button button-primary" id="save-post" type="button" disabled>
           <span class="button-label">저장</span>
           <kbd>⌘S</kbd>
         </button>
@@ -268,13 +268,13 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-    <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title" hidden>
+    <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
       <div class="auth-card">
         <span class="brand-mark" aria-hidden="true">J</span>
         <p class="eyebrow">Administrator</p>
         <h1 id="auth-title">관리자 로그인</h1>
-        <p id="auth-message">GitHub 계정으로 본인 확인 후 글을 관리할 수 있습니다.</p>
-        <a class="button button-primary auth-button" href="https://auth.jhwan.dev/admin/auth">GitHub로 로그인</a>
+        <p id="auth-message" role="status" aria-live="polite">관리자 세션을 확인하고 있습니다.</p>
+        <a class="button button-primary auth-button" id="auth-login" href="https://auth.jhwan.dev/admin/auth" hidden>GitHub로 로그인</a>
         <small>허용된 관리자 계정만 접근할 수 있습니다.</small>
       </div>
     </section>
