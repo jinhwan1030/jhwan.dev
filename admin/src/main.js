@@ -335,10 +335,14 @@ function updateHeroImage() {
 }
 
 function populateDocument(post) {
+  // A pending write would store this document's form as a "newer" draft.
+  window.clearTimeout(state.recoveryTimer);
   state.loadingDocument = true;
   state.current = post ? structuredClone(post) : null;
   const recoveredInput = readLocalRecovery(post);
   const document = recoveredInput ? { ...post, ...recoveredInput } : post;
+  // The hero image is saved from state.current rather than a form field.
+  if (recoveredInput && state.current) state.current.heroImagePath = recoveredInput.heroImagePath ?? null;
   state.slugTouched = Boolean(post?.id);
   elements.title.value = document?.title ?? '';
   elements.slug.value = document?.slug ?? '';
@@ -494,6 +498,7 @@ async function savePost() {
 
     state.saving = true;
     elements.saveButton.disabled = true;
+    window.clearTimeout(state.recoveryTimer);
     setSaveState('saving', '저장하는 중');
     const saved = state.current?.id
       ? await api.updatePost(state.current.id, { expectedVersion: state.current.version, ...input })
@@ -506,6 +511,7 @@ async function savePost() {
   } catch (error) {
     setSaveState('error', '저장 실패');
     showToast(readableError(error), { error: true });
+    if (state.dirty) scheduleLocalRecovery();
   } finally {
     state.saving = false;
     elements.saveButton.disabled = false;

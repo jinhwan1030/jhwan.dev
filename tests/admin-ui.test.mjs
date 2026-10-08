@@ -99,16 +99,13 @@ test('demo API protects both current and existing slugs', async () => {
   );
 });
 
-test('visual editor preserves common Markdown structures during round trips', async (context) => {
-  const dom = new JSDOM('<!doctype html><div id="editor"></div>', {
-    pretendToBeVisual: true,
-    url: 'https://admin.local/',
-  });
+function installDomGlobals(dom) {
   const previousGlobals = new Map();
   const globals = {
     window: dom.window,
     document: dom.window.document,
     navigator: dom.window.navigator,
+    localStorage: dom.window.localStorage,
     DOMParser: dom.window.DOMParser,
     Node: dom.window.Node,
     Text: dom.window.Text,
@@ -128,14 +125,34 @@ test('visual editor preserves common Markdown structures during round trips', as
     Object.defineProperty(globalThis, key, { configurable: true, writable: true, value });
   }
 
-  let editor;
-  context.after(() => {
-    editor?.destroy();
+  return () => {
     dom.window.close();
     for (const [key, descriptor] of previousGlobals) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
       else delete globalThis[key];
     }
+  };
+}
+
+async function waitFor(predicate, message, timeout = 5_000) {
+  const deadline = Date.now() + timeout;
+  while (!predicate()) {
+    if (Date.now() > deadline) throw new Error(`Timed out waiting for ${message}`);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+}
+
+test('visual editor preserves common Markdown structures during round trips', async (context) => {
+  const dom = new JSDOM('<!doctype html><div id="editor"></div>', {
+    pretendToBeVisual: true,
+    url: 'https://admin.local/',
+  });
+  const restoreGlobals = installDomGlobals(dom);
+
+  let editor;
+  context.after(() => {
+    editor?.destroy();
+    restoreGlobals();
   });
 
   const { createMarkdownEditor, setMarkdown } = await import('../admin/src/editor.js');
@@ -172,4 +189,47 @@ test('visual editor preserves common Markdown structures during round trips', as
   const secondRoundTrip = editor.getMarkdown();
   assert.match(secondRoundTrip, /\|\s*항목\s*\|\s*상태\s*\|/);
   assert.match(secondRoundTrip, /```js[\s\S]*console\.log\('admin'\);?[\s\S]*```/);
+});
+
+test('browser recovery restores the hero image and is not resurrected by a quick save', async (context) => {
+  const html = await readFile(new URL('admin/index.html', projectUrl), 'utf8');
+  const dom = new JSDOM(html, { pretendToBeVisual: true, url: 'https://admin.local/admin/?demo=1' });
+  dom.window.confirm = () => true;
+  const restoreGlobals = installDomGlobals(dom);
+  context.after(restoreGlobals);
+
+  const recoveryKey = 'jhwan-admin-recovery:demo-1';
+  const recoveredHero = `/uploads/${'b'.repeat(64)}.png`;
+  dom.window.localStorage.setItem(recoveryKey, JSON.stringify({
+    savedAt: '2099-01-01T00:00:00.000Z',
+    input: {
+      title: '복구된 제목',
+      slug: 'database-content-preview',
+      description: '브라우저에 남은 임시 저장본입니다.',
+      bodyMarkdown: '## 복구된 본문\n',
+      category: '개발',
+      status: 'published',
+      heroImagePath: recoveredHero,
+      publishedAt: '2026-08-19T03:00:00.000Z',
+    },
+  }));
+
+  // Evaluated once per process; the demo flag in the URL selects the in-memory API.
+  await import('../admin/src/main.js');
+  const document = dom.window.document;
+  const title = document.querySelector('#post-title');
+  const heroPath = document.querySelector('#hero-preview-path');
+  const versionLabel = document.querySelector('#version-label');
+  await waitFor(() => title.value === '복구된 제목', 'the recovered draft');
+  assert.equal(heroPath.textContent, recoveredHero);
+
+  // Save within the 800 ms local-recovery debounce window.
+  title.value = '복구 후 바로 저장';
+  title.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+  document.querySelector('#save-post').click();
+  await waitFor(() => versionLabel.textContent === '버전 4', 'the saved post');
+  assert.equal(heroPath.textContent, recoveredHero);
+
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
+  assert.equal(dom.window.localStorage.getItem(recoveryKey), null);
 });
