@@ -14,6 +14,7 @@ const LOGIN_TICKET_ISSUER = 'jhwan-cms-oauth';
 const LOGIN_TICKET_AUDIENCE = 'jhwan-admin';
 const LOGIN_TICKET_PURPOSE = 'admin-login';
 const CLOCK_SKEW_SECONDS = 30;
+const MAX_LOGIN_TICKET_LIFETIME_SECONDS = 5 * 60;
 
 export class AuthenticationError extends Error {
   constructor(code, message) {
@@ -120,7 +121,7 @@ export function verifyAdminLoginTicket(ticket, secret, now = Date.now()) {
   if (payload.iat > nowSeconds + CLOCK_SKEW_SECONDS || payload.exp <= nowSeconds) {
     throw new AuthenticationError('expired_login_ticket', 'Login ticket has expired');
   }
-  if (payload.exp <= payload.iat || payload.exp - payload.iat > 5 * 60) {
+  if (payload.exp <= payload.iat || payload.exp - payload.iat > MAX_LOGIN_TICKET_LIFETIME_SECONDS) {
     throw new AuthenticationError('invalid_login_ticket', 'Login ticket lifetime is too long');
   }
 
@@ -183,6 +184,13 @@ export function createAdminAuth(
     'DELETE FROM admin_sessions WHERE expires_at <= ?',
   );
 
+  // A session row's unique login_ticket_id is the replay guard, so keep expired
+  // rows until any ticket that could have created them has expired too.
+  function pruneExpiredSessions() {
+    const replayWindowMs = (MAX_LOGIN_TICKET_LIFETIME_SECONDS + CLOCK_SKEW_SECONDS) * 1_000;
+    return deleteExpiredSessions.run(new Date(clock() - replayWindowMs).toISOString()).changes;
+  }
+
   function exchangeLoginTicket(ticket) {
     const identity = verifyAdminLoginTicket(ticket, loginTicketSecret, clock());
     if (identity.githubUserId !== String(allowedGithubUserId)) {
@@ -207,6 +215,7 @@ export function createAdminAuth(
 
     try {
       withImmediateTransaction(database, () => {
+        pruneExpiredSessions();
         insertSession.run(
           session.id,
           hash(sessionToken),
@@ -257,9 +266,7 @@ export function createAdminAuth(
       return result.changes === 1;
     },
 
-    prune() {
-      return deleteExpiredSessions.run(new Date(clock()).toISOString()).changes;
-    },
+    prune: pruneExpiredSessions,
   };
 }
 

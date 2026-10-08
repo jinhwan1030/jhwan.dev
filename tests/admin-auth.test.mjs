@@ -77,6 +77,46 @@ test('exchanges a one-time ticket for a revocable session and CSRF token', () =>
   }
 });
 
+test('prunes expired sessions on login only after their tickets cannot be replayed', () => {
+  const database = openDatabase(':memory:');
+  migrateDatabase(database);
+  let now = NOW;
+  let sessionCount = 0;
+  let tokenCount = 0;
+  const auth = createAdminAuth(database, {
+    allowedGithubUserId: '12345678',
+    loginTicketSecret: TICKET_SECRET,
+    sessionMaxAgeSeconds: 300,
+    clock: () => now,
+    idGenerator: () => `session-${++sessionCount}`,
+    tokenGenerator: () => `token-${++tokenCount}`.padEnd(43, 'x'),
+  });
+  const ticketAt = (ticketId, timestamp) => {
+    const seconds = Math.floor(timestamp / 1_000);
+    return signAdminLoginTicket({
+      ticketId,
+      githubUserId: '12345678',
+      githubLogin: 'jinhwan1030',
+      issuedAt: seconds,
+      expiresAt: seconds + 300,
+    }, TICKET_SECRET);
+  };
+  const sessionIds = () => database.prepare('SELECT id FROM admin_sessions ORDER BY id').all().map((row) => row.id);
+  try {
+    auth.exchangeLoginTicket(ticketAt('ticket-old', now));
+
+    now += 301_000;
+    auth.exchangeLoginTicket(ticketAt('ticket-mid', now));
+    assert.deepEqual(sessionIds(), ['session-1', 'session-2']);
+
+    now += 330_000;
+    auth.exchangeLoginTicket(ticketAt('ticket-new', now));
+    assert.deepEqual(sessionIds(), ['session-2', 'session-3']);
+  } finally {
+    database.close();
+  }
+});
+
 test('rejects tampered, expired, long-lived, and unauthorized login tickets', () => {
   const { auth, database } = setupAuth();
   try {
