@@ -3,3 +3,5 @@
 
 export const SITE_TITLE = 'jhwan.dev';
 export const SITE_DESCRIPTION = '작은 서비스를 만들고 운영하며 배운 것을 기록하는 정진환의 개인 사이트';
+// Dates are rendered on the server, whose container clock runs in UTC.
+export const SITE_TIME_ZONE = 'Asia/Seoul';

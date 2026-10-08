@@ -15,7 +15,8 @@ if (build.status !== 0) throw new Error(`Production build failed with status ${b
 const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'jhwan-runtime-blog-'));
 const databasePath = path.join(temporaryDirectory, 'content.db');
 const sourcePosts = loadMarkdownPosts(path.resolve('src/content/blog'));
-const server = await startRuntimeServer({ databasePath });
+// Run with the production container's UTC clock so public dates must be pinned to KST.
+const server = await startRuntimeServer({ databasePath, environment: { TZ: 'UTC' } });
 
 try {
   const indexResponse = await fetch(`${server.origin}/blog/`);
@@ -71,6 +72,16 @@ try {
       publishedAt: null,
     });
     repository.update(renamed.id, renamed.version, { slug: '한글-새-주소' });
+    repository.create({
+      slug: '__runtime-kst-date',
+      title: 'Runtime KST date fixture',
+      description: 'Published at 05:30 KST, which is still the previous day in UTC.',
+      bodyMarkdown: '## Runtime fixture',
+      category: '개발',
+      status: 'published',
+      heroImagePath: null,
+      publishedAt: '2026-01-01T20:30:00.000Z',
+    });
   } finally {
     database.close();
   }
@@ -92,8 +103,17 @@ try {
     );
   }
 
+  const kstDetail = await (await fetch(`${server.origin}/blog/__runtime-kst-date/`)).text();
+  if (!/<time datetime="2026-01-01T20:30:00.000Z">\s*2026년 1월 2일\s*<\/time>/.test(kstDetail)) {
+    throw new Error('A post detail date must be rendered in Korea Standard Time');
+  }
+  const kstCard = refreshedIndex.match(/href="\/blog\/__runtime-kst-date\/"[\s\S]*?<\/a>/)?.[0] ?? '';
+  if (!kstCard.includes('2026. 1. 2.')) {
+    throw new Error('A blog index date must be rendered in Korea Standard Time');
+  }
+
   console.log(
-    `Runtime blog validation passed (${published.length} published, ${hidden.length} hidden, immediate DB update and slug redirect verified)`,
+    `Runtime blog validation passed (${published.length} published, ${hidden.length} hidden, immediate DB update, slug redirect, and KST dates verified)`,
   );
 } finally {
   await server.stop();

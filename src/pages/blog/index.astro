@@ -2,7 +2,7 @@
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { SITE_DESCRIPTION, SITE_TIME_ZONE, SITE_TITLE } from '../../consts';
 import { getContentRuntime } from '../../lib/server/content-runtime.js';
 
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
@@ -207,7 +207,7 @@ const posts = getContentRuntime().repository.listPublished() as PublicPost[];
               <p class="card-category">{post.category}</p>
               <h2 class="card-title">{post.title}</h2>
               <p class="card-desc">{post.description}</p>
-              <p class="card-date">{new Date(post.publishedAt).toLocaleDateString('ko-KR')}</p>
+              <p class="card-date">{new Date(post.publishedAt).toLocaleDateString('ko-KR', { timeZone: SITE_TIME_ZONE })}</p>
             </div>
           </a>
         ))}
