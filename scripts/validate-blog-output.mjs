@@ -49,7 +49,8 @@ try {
 
   const database = openDatabase(databasePath);
   try {
-    createPostRepository(database).create({
+    const repository = createPostRepository(database);
+    repository.create({
       slug: '__runtime-immediate-update',
       title: 'Runtime immediate update fixture',
       description: 'This post must appear without rebuilding the image.',
@@ -59,6 +60,17 @@ try {
       heroImagePath: null,
       publishedAt: null,
     });
+    const renamed = repository.create({
+      slug: '한글-이전-주소',
+      title: 'Runtime renamed slug fixture',
+      description: 'The previous Korean slug must redirect to the new one.',
+      bodyMarkdown: '## Runtime fixture',
+      category: '개발',
+      status: 'published',
+      heroImagePath: null,
+      publishedAt: null,
+    });
+    repository.update(renamed.id, renamed.version, { slug: '한글-새-주소' });
   } finally {
     database.close();
   }
@@ -70,8 +82,18 @@ try {
   }
   if (!refreshedDetail.ok) throw new Error('A newly published database detail did not render');
 
+  const historicalRedirect = await fetch(`${server.origin}/blog/${encodeURIComponent('한글-이전-주소')}/`, {
+    redirect: 'manual',
+  });
+  const expectedLocation = `/blog/${encodeURIComponent('한글-새-주소')}/`;
+  if (historicalRedirect.status !== 301 || historicalRedirect.headers.get('Location') !== expectedLocation) {
+    throw new Error(
+      `A renamed Korean slug must redirect permanently (${historicalRedirect.status} ${historicalRedirect.headers.get('Location')})`,
+    );
+  }
+
   console.log(
-    `Runtime blog validation passed (${published.length} published, ${hidden.length} hidden, immediate DB update verified)`,
+    `Runtime blog validation passed (${published.length} published, ${hidden.length} hidden, immediate DB update and slug redirect verified)`,
   );
 } finally {
   await server.stop();

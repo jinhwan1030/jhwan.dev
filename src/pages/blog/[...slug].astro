@@ -14,7 +14,9 @@ const post = repository.findPublishedBySlug(slug);
 if (!post) {
   const historical = repository.resolveHistoricalSlug(slug);
   if (historical && repository.findPublishedBySlug(historical.slug)) {
-    return Astro.redirect(`/blog/${historical.slug}/`, 301);
+    // Location must be ASCII; Korean slugs would make the Response constructor throw.
+    const location = historical.slug.split('/').map(encodeURIComponent).join('/');
+    return Astro.redirect(`/blog/${location}/`, 301);
   }
   Astro.response.status = 404;
 }
