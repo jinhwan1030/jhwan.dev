@@ -114,14 +114,16 @@ test('administrator HTTP routes exchange a ticket and persist a published post',
   assert.equal(staleUpdate.status, 409);
   assert.equal((await staleUpdate.json()).error.code, 'version_conflict');
 
+  // A cross-site request carries both cookies automatically but cannot set the header.
   const missingCsrf = await postRoute.PATCH({
     params: { id: created.id },
     request: jsonRequest(`https://jhwan.dev/api/admin/posts/${created.id}`, 'PATCH', {
       expectedVersion: created.version,
       title: '허용되지 않은 수정',
-    }, `__Host-jhwan_admin_session=${sessionToken}`),
+    }, cookies),
   });
   assert.equal(missingCsrf.status, 403);
+  assert.equal((await missingCsrf.json()).error.code, 'invalid_csrf_token');
 
   const png = Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zr9sAAAAASUVORK5CYII=',
@@ -148,7 +150,7 @@ test('administrator HTTP routes exchange a ticket and persist a published post',
   const blockedUpload = await mediaRoute.POST({
     request: new Request('https://jhwan.dev/api/admin/media', {
       method: 'POST',
-      headers: { Cookie: `__Host-jhwan_admin_session=${sessionToken}` },
+      headers: { Cookie: cookies },
       body: blockedForm,
     }),
   });

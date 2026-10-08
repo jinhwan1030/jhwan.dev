@@ -134,7 +134,7 @@ try {
 
   const missingCsrf = await jsonRequest(`/api/admin/posts/${create.payload.post.id}`, {
     method: 'PATCH',
-    cookie: `__Host-jhwan_admin_session=${sessionToken}`,
+    cookie,
     body: { expectedVersion: 1, title: 'Blocked update' },
   });
   if (missingCsrf.response.status !== 403) throw new Error('A write without CSRF must be rejected');

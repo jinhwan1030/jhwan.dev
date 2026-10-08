@@ -1,8 +1,4 @@
-import {
-  ADMIN_CSRF_COOKIE,
-  ADMIN_SESSION_COOKIE,
-  AuthenticationError,
-} from './admin-auth.js';
+import { ADMIN_SESSION_COOKIE, AuthenticationError } from './admin-auth.js';
 import { AdminApiError } from './admin-post-service.js';
 import { ManagedMediaError } from './media-storage.js';
 import { isAdminEnabled } from './admin-runtime.js';
@@ -67,7 +63,9 @@ export function adminContext(request) {
   const cookies = parseCookies(request.headers.get('Cookie'));
   return {
     sessionToken: cookies[ADMIN_SESSION_COOKIE],
-    csrfToken: request.headers.get('X-CSRF-Token') ?? cookies[ADMIN_CSRF_COOKIE],
+    // Only the header proves same-origin script. Browsers attach the CSRF cookie
+    // automatically, so accepting it here would turn the check into a no-op.
+    csrfToken: request.headers.get('X-CSRF-Token'),
   };
 }
 
