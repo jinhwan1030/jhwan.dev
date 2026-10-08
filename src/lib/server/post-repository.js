@@ -126,6 +126,9 @@ export function createPostRepository(
   const insertSlugHistoryStatement = database.prepare(
     'INSERT INTO post_slug_history (post_id, slug, created_at) VALUES (?, ?, ?)',
   );
+  const deleteOwnSlugHistoryStatement = database.prepare(
+    'DELETE FROM post_slug_history WHERE slug = ? AND post_id = ?',
+  );
   const listRevisionsStatement = database.prepare(`
     SELECT id, post_id, version, snapshot_json, created_at
     FROM post_revisions WHERE post_id = ? ORDER BY version DESC
@@ -189,7 +192,7 @@ export function createPostRepository(
   function assertSlugAvailable(slug, currentPostId = null) {
     const current = mapPost(findBySlugStatement.get(slug));
     const historical = findSlugHistoryStatement.get(slug);
-    if ((current && current.id !== currentPostId) || historical) {
+    if ((current && current.id !== currentPostId) || (historical && historical.post_id !== currentPostId)) {
       throw new PostSlugConflictError(slug);
     }
   }
@@ -317,6 +320,8 @@ export function createPostRepository(
 
         if (updated.slug !== existing.slug) {
           assertSlugAvailable(updated.slug, existing.id);
+          // Reclaiming one of this post's previous slugs turns it back from a redirect.
+          deleteOwnSlugHistoryStatement.run(updated.slug, existing.id);
           insertSlugHistoryStatement.run(existing.id, existing.slug, timestamp);
         }
 

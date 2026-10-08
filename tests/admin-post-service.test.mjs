@@ -7,7 +7,7 @@ import {
 } from '../src/lib/server/admin-post-service.js';
 import { openDatabase, verifyDatabase } from '../src/lib/server/database.js';
 import { migrateDatabase } from '../src/lib/server/migrations.js';
-import { createPostRepository } from '../src/lib/server/post-repository.js';
+import { createPostRepository, PostSlugConflictError } from '../src/lib/server/post-repository.js';
 
 const TICKET_SECRET = 'another-ticket-secret-with-more-than-32-bytes';
 const NOW = Date.parse('2026-08-19T06:00:00.000Z');
@@ -127,6 +127,43 @@ test('creates, publishes, renames, deletes, and restores with optimistic locking
     assert.equal(restored.version, 5);
     assert.equal(restored.deletedAt, null);
     assert.equal(service.listRevisions(writeContext, created.id).length, 5);
+    assert.deepEqual(verifyDatabase(database), { integrity: 'ok', foreignKeyViolations: 0 });
+  } finally {
+    database.close();
+  }
+});
+
+test('lets a post return to its own previous slug without freeing it for other posts', () => {
+  const { database, repository, service, writeContext } = setupService();
+  try {
+    const created = service.createPost(writeContext, {
+      slug: '원래-주소',
+      title: '주소 되돌리기',
+      description: '실수로 바꾼 주소를 되돌릴 수 있어야 합니다.',
+      bodyMarkdown: '',
+    });
+    service.updatePost(writeContext, created.id, { expectedVersion: 1, slug: '잘못-바꾼-주소' });
+
+    const reverted = service.updatePost(writeContext, created.id, { expectedVersion: 2, slug: '원래-주소' });
+    assert.equal(reverted.slug, '원래-주소');
+    assert.equal(reverted.version, 3);
+    assert.equal(repository.resolveHistoricalSlug('원래-주소'), null);
+    assert.equal(repository.resolveHistoricalSlug('잘못-바꾼-주소').id, created.id);
+
+    const otherRepository = createPostRepository(database, { idGenerator: () => 'post-2', clock: () => NOW });
+    assert.throws(
+      () => otherRepository.create({
+        slug: '잘못-바꾼-주소',
+        title: '다른 글',
+        description: '다른 글의 이전 주소는 계속 보호됩니다.',
+        bodyMarkdown: '',
+        category: '개발',
+        status: 'draft',
+        heroImagePath: null,
+        publishedAt: null,
+      }),
+      PostSlugConflictError,
+    );
     assert.deepEqual(verifyDatabase(database), { integrity: 'ok', foreignKeyViolations: 0 });
   } finally {
     database.close();
