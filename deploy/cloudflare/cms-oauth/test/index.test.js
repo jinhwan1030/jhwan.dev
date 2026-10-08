@@ -95,6 +95,9 @@ describe('administrator OAuth worker', () => {
       if (url === 'https://api.github.com/user') {
         return Response.json({ id: Number(ENV.ADMIN_GITHUB_USER_ID), login: 'jinhwan' });
       }
+      if (url === `https://api.github.com/applications/${ENV.GITHUB_OAUTH_ID}/token`) {
+        return new Response(null, { status: 204 });
+      }
       throw new Error(`unexpected URL: ${url}`);
     };
 
@@ -107,7 +110,11 @@ describe('administrator OAuth worker', () => {
     );
 
     assert.equal(response.status, 303);
-    assert.equal(fetchCalls.length, 2);
+    assert.equal(fetchCalls.length, 3);
+    const revocation = fetchCalls[2].init;
+    assert.equal(revocation.method, 'DELETE');
+    assert.equal(revocation.headers.Authorization, `Basic ${btoa('client-id:client-secret')}`);
+    assert.deepEqual(JSON.parse(revocation.body), { access_token: 'server-only-github-token' });
     const location = new URL(response.headers.get('Location'));
     assert.equal(location.origin, ENV.CMS_ORIGIN);
     assert.equal(location.pathname, '/admin/');
@@ -124,6 +131,7 @@ describe('administrator OAuth worker', () => {
     const responses = [
       Response.json({ access_token: 'server-only-github-token' }),
       Response.json({ id: 999, login: 'someone-else' }),
+      new Response(null, { status: 204 }),
     ];
     const response = await handleRequest(
       request(`/callback?code=code&state=${state}`, {
@@ -134,6 +142,34 @@ describe('administrator OAuth worker', () => {
     );
     assert.equal(response.status, 403);
     assert.doesNotMatch(await response.text(), /token|999|someone-else/i);
+    assert.equal(responses.length, 0, 'the GitHub token must be revoked for rejected identities too');
+  });
+
+  it('still completes a verified login when GitHub token revocation fails', async () => {
+    const start = await handleRequest(request('/admin/auth'), ENV);
+    const state = extractState(start);
+    const responses = [
+      Response.json({ access_token: 'server-only-github-token' }),
+      Response.json({ id: Number(ENV.ADMIN_GITHUB_USER_ID), login: 'jinhwan' }),
+    ];
+    const originalError = console.error;
+    console.error = () => {};
+    try {
+      const response = await handleRequest(
+        request(`/callback?code=code&state=${state}`, {
+          headers: { Cookie: `__Host-jhwan_admin_oauth_state=${state}` },
+        }),
+        ENV,
+        async () => {
+          if (responses.length === 0) throw new Error('GitHub API is unavailable');
+          return responses.shift();
+        },
+      );
+      assert.equal(response.status, 303);
+      assert.match(new URL(response.headers.get('Location')).hash, /^#ticket=/);
+    } finally {
+      console.error = originalError;
+    }
   });
 
   it('does not expose GitHub errors or secrets to the browser', async () => {

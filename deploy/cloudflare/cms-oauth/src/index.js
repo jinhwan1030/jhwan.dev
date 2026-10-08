@@ -1,6 +1,7 @@
 const GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const GITHUB_USER_URL = 'https://api.github.com/user';
+const GITHUB_API_VERSION = '2022-11-28';
 const STATE_COOKIE = '__Host-jhwan_admin_oauth_state';
 const STATE_MAX_AGE_SECONDS = 600;
 const GITHUB_SCOPE = 'read:user';
@@ -185,7 +186,7 @@ async function loadGithubIdentity(token, fetchImpl) {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${token}`,
       'User-Agent': 'jhwan-admin-oauth',
-      'X-GitHub-Api-Version': '2022-11-28',
+      'X-GitHub-Api-Version': GITHUB_API_VERSION,
     },
   });
   const user = await userResponse.json();
@@ -193,6 +194,30 @@ async function loadGithubIdentity(token, fetchImpl) {
     throw new Error('GitHub identity verification failed');
   }
   return { id: String(user.id), login: user.login };
+}
+
+// The token is only needed to read the identity once. Revocation is best effort
+// so a GitHub API hiccup never blocks an otherwise verified login.
+async function revokeGithubToken(token, env, fetchImpl) {
+  try {
+    const revokeResponse = await fetchImpl(
+      `https://api.github.com/applications/${encodeURIComponent(env.GITHUB_OAUTH_ID)}/token`,
+      {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Basic ${btoa(`${env.GITHUB_OAUTH_ID}:${env.GITHUB_OAUTH_SECRET}`)}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'jhwan-admin-oauth',
+          'X-GitHub-Api-Version': GITHUB_API_VERSION,
+        },
+        body: JSON.stringify({ access_token: token }),
+      },
+    );
+    if (!revokeResponse.ok) console.error(`GitHub token revocation failed: ${revokeResponse.status}`);
+  } catch {
+    console.error('GitHub token revocation failed');
+  }
 }
 
 async function handleCallback(request, url, env, fetchImpl) {
@@ -210,7 +235,12 @@ async function handleCallback(request, url, env, fetchImpl) {
 
   try {
     const token = await exchangeCodeForToken(code, env, fetchImpl);
-    const identity = await loadGithubIdentity(token, fetchImpl);
+    let identity;
+    try {
+      identity = await loadGithubIdentity(token, fetchImpl);
+    } finally {
+      await revokeGithubToken(token, env, fetchImpl);
+    }
     if (identity.id !== env.ADMIN_GITHUB_USER_ID) {
       return withClearedState(textResponse('GitHub account is not an administrator', 403));
     }
