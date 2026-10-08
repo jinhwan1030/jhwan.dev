@@ -26,6 +26,17 @@ const SHARP_FORMATS = Object.freeze({
   webp: 'webp',
 });
 
+// Uploads are public, so camera EXIF (GPS, device), XMP, and IPTC must not be
+// served. Only images carrying such metadata are re-encoded; clean files keep
+// their original bytes.
+const METADATA_FREE_ENCODERS = Object.freeze({
+  avif: (pipeline) => pipeline.avif({ quality: 70 }),
+  gif: (pipeline) => pipeline.gif(),
+  jpg: (pipeline) => pipeline.jpeg({ quality: 90 }),
+  png: (pipeline) => pipeline.png(),
+  webp: (pipeline) => pipeline.webp({ quality: 90 }),
+});
+
 export class ManagedMediaError extends Error {
   constructor(status, code, message) {
     super(message);
@@ -132,7 +143,33 @@ async function inspectImage(contents, declaredMimeType) {
   if (declaredMimeType && declaredMimeType !== mimeType) {
     throw new ManagedMediaError(415, 'media_type_mismatch', '파일 내용과 이미지 형식이 일치하지 않습니다.');
   }
-  return { extension, mimeType, width: metadata.width, height: metadata.height };
+  return {
+    extension,
+    mimeType,
+    width: metadata.width,
+    height: metadata.height,
+    hasPrivateMetadata: Boolean(metadata.exif || metadata.xmp || metadata.iptc),
+  };
+}
+
+async function stripPrivateMetadata(contents, image) {
+  if (!image.hasPrivateMetadata) return { contents, width: image.width, height: image.height };
+
+  const animated = image.extension === 'gif';
+  let pipeline = sharp(contents, { animated, failOn: 'error', limitInputPixels: MAX_MEDIA_PIXELS });
+  // Bake EXIF orientation into the pixels before the orientation tag is dropped.
+  if (!animated) pipeline = pipeline.rotate().keepIccProfile();
+  try {
+    const { data, info } = await METADATA_FREE_ENCODERS[image.extension](pipeline)
+      .toBuffer({ resolveWithObject: true });
+    return {
+      contents: data,
+      width: animated ? image.width : info.width,
+      height: animated ? image.height : info.height,
+    };
+  } catch {
+    throw new ManagedMediaError(415, 'invalid_media', '지원하는 정상 이미지 파일만 업로드할 수 있습니다.');
+  }
 }
 
 export function resolveMediaRoot(mediaRoot = process.env.JHWAN_MEDIA_PATH) {
@@ -160,7 +197,8 @@ export async function storeManagedMedia(
   const safeName = normalizeOriginalName(originalName);
   const safeAltText = normalizeAltText(altText);
   const image = await inspectImage(buffer, declaredMimeType);
-  const checksum = createHash('sha256').update(buffer).digest('hex');
+  const stored = await stripPrivateMetadata(buffer, image);
+  const checksum = createHash('sha256').update(stored.contents).digest('hex');
   const storageKey = `${checksum}.${image.extension}`;
   const resolvedRoot = resolveMediaRoot(mediaRoot);
   assertMediaRoot(resolvedRoot);
@@ -175,13 +213,13 @@ export async function storeManagedMedia(
         if (
           existing.storage_key !== storageKey
           || existing.mime_type !== image.mimeType
-          || existing.byte_size !== buffer.length
+          || existing.byte_size !== stored.contents.length
         ) throw new Error(`Managed media metadata conflict: ${storageKey}`);
-        promoteMediaFile(resolvedRoot, storageKey, buffer, checksum);
+        promoteMediaFile(resolvedRoot, storageKey, stored.contents, checksum);
         return;
       }
 
-      createdFile = promoteMediaFile(resolvedRoot, storageKey, buffer, checksum);
+      createdFile = promoteMediaFile(resolvedRoot, storageKey, stored.contents, checksum);
       const timestamp = new Date().toISOString();
       database.prepare(`
         INSERT INTO media (
@@ -193,9 +231,9 @@ export async function storeManagedMedia(
         storageKey,
         safeName,
         image.mimeType,
-        buffer.length,
-        image.width,
-        image.height,
+        stored.contents.length,
+        stored.width,
+        stored.height,
         safeAltText,
         timestamp,
         timestamp,

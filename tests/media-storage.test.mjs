@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import sharp from 'sharp';
 
 import { openDatabase } from '../src/lib/server/database.js';
 import {
@@ -126,4 +127,47 @@ test('validates, stores, and deduplicates administrator image uploads', async (c
     }),
     (error) => error instanceof ManagedMediaError && error.code === 'media_type_mismatch',
   );
+});
+
+test('strips location and device metadata from uploaded photos', async (context) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'jhwan-media-exif-'));
+  const mediaRoot = path.join(root, 'uploads');
+  const database = openDatabase(path.join(root, 'content.db'));
+  migrateDatabase(database);
+  context.after(() => {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const photo = await sharp({ create: { width: 40, height: 20, channels: 3, background: '#2563eb' } })
+    .jpeg()
+    .withExif({
+      IFD0: { Make: 'PrivatePhoneMaker', Model: 'PrivatePhoneModel' },
+      IFD3: { GPSLatitudeRef: 'N', GPSLatitude: '37/1 33/1 0/1' },
+    })
+    .withMetadata({ orientation: 6 })
+    .toBuffer();
+  assert.ok((await sharp(photo).metadata()).exif);
+
+  const upload = () => storeManagedMedia(database, {
+    contents: photo,
+    originalName: 'phone.jpg',
+    declaredMimeType: 'image/jpeg',
+    mediaRoot,
+  });
+  const created = await upload();
+  const stored = fs.readFileSync(path.join(mediaRoot, created.storageKey));
+  const storedMetadata = await sharp(stored).metadata();
+  assert.equal(storedMetadata.exif, undefined);
+  assert.equal(storedMetadata.orientation, undefined);
+  assert.equal(stored.includes('PrivatePhoneModel'), false);
+  assert.equal(created.mimeType, 'image/jpeg');
+  assert.equal(created.byteSize, stored.length);
+  assert.equal(created.id, createHash('sha256').update(stored).digest('hex'));
+  assert.deepEqual([created.width, created.height], [20, 40]);
+  assert.deepEqual([storedMetadata.width, storedMetadata.height], [20, 40]);
+
+  const duplicate = await upload();
+  assert.equal(duplicate.id, created.id);
+  assert.equal(duplicate.deduplicated, true);
 });
