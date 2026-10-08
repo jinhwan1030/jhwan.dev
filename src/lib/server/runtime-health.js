@@ -1,11 +1,11 @@
 import fs from 'node:fs';
-import path from 'node:path';
 
 import { getContentRuntime } from './content-runtime.js';
+import { resolveMediaRoot } from './media-storage.js';
 
 export function checkRuntimeHealth({
   contentRuntime = getContentRuntime(),
-  mediaPath = process.env.JHWAN_MEDIA_PATH ?? path.resolve('.data/uploads'),
+  mediaPath,
   fileSystem = fs,
 } = {}) {
   const postsTable = contentRuntime.database
@@ -13,7 +13,8 @@ export function checkRuntimeHealth({
     .get();
   if (postsTable?.name !== 'posts') throw new Error('Content database schema is unavailable');
 
-  const resolvedMediaPath = path.resolve(mediaPath);
+  // Check the same directory uploads are written to, including its fallback.
+  const resolvedMediaPath = resolveMediaRoot(mediaPath);
   const mediaStat = fileSystem.statSync(resolvedMediaPath);
   if (!mediaStat.isDirectory()) throw new Error('Managed media path is not a directory');
   fileSystem.accessSync(resolvedMediaPath, fs.constants.R_OK | fs.constants.W_OK);
